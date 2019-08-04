@@ -25,9 +25,9 @@ class xiaomiFanAccessory {
         this.alivePollingInterval = config['pollingInterval'] || 5;
         this.alivePollingInterval = this.alivePollingInterval * 1000;
         this.prefsDir = config['prefsDir'] || ppath('xiaomiFan/');
-		this.moveControl = config['moveControl'] || true;
-		this.buzzerControl = config['buzzerControl'] || true;
-		this.ledControl = config['ledControl'] || true;
+        this.moveControl = config['moveControl'] || true;
+        this.buzzerControl = config['buzzerControl'] || true;
+        this.ledControl = config['ledControl'] || true;
 
         if (!this.ip) {
             this.log.error("[ERROR]'ip' not defined! Please check your 'config.json' file.");
@@ -114,53 +114,53 @@ class xiaomiFanAccessory {
 
         this.enabledServices.push(this.fanService);
 
-		
-		 // add move left/right buttons
-		if(this.moveControl){
-			this.moveLeftService = new Service.Switch(this.name + ' Move left', 'moveLeftService');
-			this.moveLeftService
-				.getCharacteristic(Characteristic.On)
-				.on('get', this.getMoveFanSwitch.bind(this))
-				.on('set', (state, callback) => {
-					this.setMoveFanSwitch(state, callback, 'left');
-				});
 
-			this.enabledServices.push(this.moveLeftService);
+        // add move left/right buttons
+        if (this.moveControl) {
+            this.moveLeftService = new Service.Switch(this.name + ' Move left', 'moveLeftService');
+            this.moveLeftService
+                .getCharacteristic(Characteristic.On)
+                .on('get', this.getMoveFanSwitch.bind(this))
+                .on('set', (state, callback) => {
+                    this.setMoveFanSwitch(state, callback, 'left');
+                });
 
-			this.moveRightService = new Service.Switch(this.name + ' Move right', 'moveRightService');
-			this.moveRightService
-				.getCharacteristic(Characteristic.On)
-				.on('get', this.getMoveFanSwitch.bind(this))
-				.on('set', (state, callback) => {
-					this.setMoveFanSwitch(state, callback, 'right');
-				});
+            this.enabledServices.push(this.moveLeftService);
 
-			this.enabledServices.push(this.moveRightService);
-		}
-		
+            this.moveRightService = new Service.Switch(this.name + ' Move right', 'moveRightService');
+            this.moveRightService
+                .getCharacteristic(Characteristic.On)
+                .on('get', this.getMoveFanSwitch.bind(this))
+                .on('set', (state, callback) => {
+                    this.setMoveFanSwitch(state, callback, 'right');
+                });
+
+            this.enabledServices.push(this.moveRightService);
+        }
+
 
         // add buzzer button
-		if(this.buzzerControl){
-			this.buzzerService = new Service.Switch(this.name + ' Buzzer', 'buzzerService');
-			this.buzzerService
-				.getCharacteristic(Characteristic.On)
-				.on('get', this.getBuzzer.bind(this))
-				.on('set', this.setBuzzer.bind(this));
+        if (this.buzzerControl) {
+            this.buzzerService = new Service.Switch(this.name + ' Buzzer', 'buzzerService');
+            this.buzzerService
+                .getCharacteristic(Characteristic.On)
+                .on('get', this.getBuzzer.bind(this))
+                .on('set', this.setBuzzer.bind(this));
 
-			this.enabledServices.push(this.buzzerService);
-		}
-		
-		
+            this.enabledServices.push(this.buzzerService);
+        }
+
+
         // add led button
-		if(this.ledControl){
-			this.ledService = new Service.Switch(this.name + ' LED', 'ledService');
-			this.ledService
-				.getCharacteristic(Characteristic.On)
-				.on('get', this.getLed.bind(this))
-				.on('set', this.setLed.bind(this));
+        if (this.ledControl) {
+            this.ledService = new Service.Switch(this.name + ' LED', 'ledService');
+            this.ledService
+                .getCharacteristic(Characteristic.On)
+                .on('get', this.getLed.bind(this))
+                .on('set', this.setLed.bind(this));
 
-			this.enabledServices.push(this.ledService);
-		}
+            this.enabledServices.push(this.ledService);
+        }
     }
 
 
@@ -188,8 +188,8 @@ class xiaomiFanAccessory {
             }
 
             callback(true);
-			// WIP, try to find a way to make the events work, to get values from the fan only when something changes and also enable home automation
-			/*
+            // WIP, try to find a way to make the events work, to get values from the fan only when something changes and also enable home automation
+            /*
             device.defineProperty('power');
             device.defineProperty('speed');
             device.loadProperties(['power', 'speed']);
