@@ -1,5 +1,5 @@
 const miio = require('miio');
-const ping = require('ping'); // remove this from here and add it as a depenency to the package.json, unisital the global package
+const ping = require('ping');
 const fs = require('fs');
 const ppath = require('persist-path');
 const mkdirp = require('mkdirp');
