@@ -1,0 +1,58 @@
+{
+  "pluginAlias": "xiaomifan",
+  "pluginType": "accessory",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "My Xiaomi Fan",
+        "minLength": 1,
+        "required": true
+      },
+      "ip": {
+        "title": "Fan ip address",
+        "type": "string",
+        "required": true
+      },
+      "token": {
+        "title": "Fan device token",
+        "type": "string",
+        "required": true
+      },
+      "prefsDir": {
+        "title": "Prefs directory",
+        "type": "string",
+        "default": "~/.xiaomiFan",
+        "required": false
+      },
+      "pollingInterval": {
+        "title": "Background polling interval in seconds",
+        "type": "number",
+        "default": 5,
+        "required": false
+      },
+      "moveControl": {
+        "title": "Show move left/right control",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "buzzerControl": {
+        "title": "Show buzzer control",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "ledControl": {
+        "title": "Show led control",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      }
+    }
+  }
+}
+
+
