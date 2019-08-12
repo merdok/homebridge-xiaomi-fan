@@ -35,7 +35,7 @@ Example configuration:
 {
   "accessories": [
     {
-      "accessory": "xioamifan",
+      "accessory": "xiaomifan",
       "name": "Xiaomi Fan 2s",
       "ip": "192.168.0.40",
       "token": "8305d8fba83f94bb5ad8f963b6c84c84",
