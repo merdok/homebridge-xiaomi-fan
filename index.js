@@ -25,9 +25,18 @@ class xiaomiFanAccessory {
         this.alivePollingInterval = config['pollingInterval'] || 5;
         this.alivePollingInterval = this.alivePollingInterval * 1000;
         this.prefsDir = config['prefsDir'] || ppath('xiaomiFan/');
-        this.moveControl = config['moveControl'] || true;
-        this.buzzerControl = config['buzzerControl'] || true;
-        this.ledControl = config['ledControl'] || true;
+        this.moveControl = config['moveControl'];
+        if (this.moveControl == undefined) {
+            this.moveControl = true;
+        }
+        this.buzzerControl = config['buzzerControl'];
+        if (this.buzzerControl == undefined) {
+            this.buzzerControl = true;
+        }
+        this.ledControl = config['ledControl'];
+        if (this.ledControl == undefined) {
+            this.ledControl = true;
+        }
 
         if (!this.ip) {
             this.log.error("[ERROR]'ip' not defined! Please check your 'config.json' file.");
