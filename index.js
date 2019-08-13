@@ -94,7 +94,7 @@ class xiaomiFanAccessory {
             .setCharacteristic(Characteristic.Manufacturer, 'Xiaomi')
             .setCharacteristic(Characteristic.Model, modelName)
             .setCharacteristic(Characteristic.SerialNumber, this.ip)
-            .setCharacteristic(Characteristic.FirmwareRevision, '0.8.0');
+            .setCharacteristic(Characteristic.FirmwareRevision, '0.8.1');
 
         this.enabledServices.push(this.informationService);
 

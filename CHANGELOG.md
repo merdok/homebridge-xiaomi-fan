@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2019-08-13
+### Fixed
+- Fixed a bug where optional switches could not be disabled
+
 ## [0.8.0] - 2019-08-04
 ### Initial release
 
