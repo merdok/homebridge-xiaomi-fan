@@ -308,7 +308,7 @@ class xiaomiFanAccessory {
                         this.log.debug('Xiaomi Fan - error while setting speed level to: %d. Result: %s', value, result);
                         callback(new Error(result[0]));
                     }
-                }).catch(function(err) {
+                }).catch(err => {
                     this.log.debug('Xiaomi Fan - error while setting speed level to: %d. Error: %s', value, err);
                     callback(err);
                 });
