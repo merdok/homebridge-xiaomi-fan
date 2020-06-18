@@ -350,8 +350,6 @@ class xiaomiFanAccessory {
     getPowerState(callback) {
         if (this.fanDevice) {
             this.updateFanPowerStatus();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.isFanOn ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
     }
@@ -372,8 +370,6 @@ class xiaomiFanAccessory {
     getRotationSpeed(callback) {
         if (this.fanDevice) {
             this.updateFanRotationSpeed();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.fanRotationSpeed);
     }
@@ -405,8 +401,6 @@ class xiaomiFanAccessory {
     getLockPhysicalControls(callback) {
         if (this.fanDevice) {
             this.updateFanChildLockState();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.isChildLockActive ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
     }
@@ -427,8 +421,6 @@ class xiaomiFanAccessory {
     getSwingMode(callback) {
         if (this.fanDevice) {
             this.updateFanSwingModeState();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.isSwingModeActive ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
     }
@@ -449,8 +441,6 @@ class xiaomiFanAccessory {
     getRotationDirection(callback) {
         if (this.fanDevice) {
             this.updateFanNaturalModeState();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.isNaturalModeEnabled ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
     }
@@ -471,11 +461,7 @@ class xiaomiFanAccessory {
     }
 
     getMoveFanSwitch(callback) {
-        if (this.fanDevice) {
-            callback(null, false);
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
-        }
+        callback(null, false);
     }
 
     setMoveFanSwitch(state, callback, direction) {
@@ -499,8 +485,6 @@ class xiaomiFanAccessory {
     getBuzzer(callback) {
         if (this.fanDevice) {
             this.updateFanBuzzerState();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.isBuzzerEnabled);
     }
@@ -521,8 +505,6 @@ class xiaomiFanAccessory {
     getLed(callback) {
         if (this.fanDevice) {
             this.updateFanLedState();
-        } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
         }
         callback(null, this.isLedEnabled);
     }
