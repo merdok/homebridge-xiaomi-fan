@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.9.1] - 2020-06-19
+### Fixed
+- Fixed a bug which might have caused a crash in some cases
+
+
 ## [0.9.0] - 2020-06-14
 ### Added
 - Better device status retrieval. Requesting the device status should not longer make other accessories unresponsible.
