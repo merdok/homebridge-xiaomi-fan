@@ -7,6 +7,7 @@ const mkdirp = require('mkdirp');
 let Service;
 let Characteristic;
 
+
 module.exports = function(homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
@@ -72,7 +73,7 @@ class xiaomiFanAccessory {
         this.isBuzzerEnabled = false;
         this.isLedEnabled = true;
 
-        //preapre the services
+        //prepare the services
         this.preapreFanServices();
 
         //try to initially connect to the device
@@ -103,7 +104,7 @@ class xiaomiFanAccessory {
             .setCharacteristic(Characteristic.Manufacturer, 'Xiaomi')
             .setCharacteristic(Characteristic.Model, modelName)
             .setCharacteristic(Characteristic.SerialNumber, this.ip)
-            .setCharacteristic(Characteristic.FirmwareRevision, '0.9.1');
+            .setCharacteristic(Characteristic.FirmwareRevision, '0.9.0');
 
         this.enabledServices.push(this.informationService);
 
@@ -205,6 +206,16 @@ class xiaomiFanAccessory {
                 this.log.debug('Xiaomi Fan - fan model info file already exists, not saving!');
             }
 
+            // get dmaker fan debug info
+            if (this.isDmakerFan()) {
+                this.fanDevice.call('get_prop', ["all"]).then(result => {
+                    this.log.debug("Dmaker fan properties:");
+                    this.log.debug(result);
+                }).catch(err => {
+                    this.log.debug('Xiaomi Fan - error while requesting dmaker fan properties: %s', err);
+                });
+            }
+
             callback(true);
             // WIP, try to find a way to make the events work, to get values from the fan only when something changes and also enable home automation
             /*
@@ -239,15 +250,39 @@ class xiaomiFanAccessory {
         });
     }
 
+    isDmakerFan() {
+        if (this.fanDevice) {
+            let fanModel = this.fanDevice.miioModel;
+            if (fanModel && fanModel.includes('dmaker')) {
+                return true;
+            }
+            return false;
+        }
+
+        return false;
+    }
+
     updateFanStatus(isFanConnected) {
         if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(isFanConnected ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
     }
 
-    updateFanPowerStatus() {
+
+    // --== FAN CONTROL METHODS ==--
+
+    // power
+    getFanPowerStatus() {
         if (this.fanDevice && this.fanService) {
-            this.fanDevice.call('get_prop', ['power']).then(result => {
+            let onValue = 'on';
+            let props = ['power'];
+
+            if (this.isDmakerFan() === true) {
+                onValue = true;
+                props = ['all'];
+            }
+
+            this.fanDevice.call('get_prop', props).then(result => {
                 this.log.debug('Xiaomi Fan - got power state from fan: %s', result[0]);
-                this.isFanOn = result[0] === "on";
+                this.isFanOn = result[0] === onValue;
                 this.updateFanStatus(this.isFanOn);
             }).catch(err => {
                 this.log.debug('Xiaomi Fan - error while requesting power state: %s', err);
@@ -255,15 +290,46 @@ class xiaomiFanAccessory {
         }
     }
 
-    updateFanRotationSpeed() {
+    setFanPowerStatus(state) {
+        if (this.fanDevice) {
+            this.isFanOn = state === Characteristic.Active.ACTIVE;
+
+            let powerState = this.isFanOn ? 'on' : 'off';
+            let setMethod = 'set_power';
+
+            if (this.isDmakerFan() === true) {
+                powerState = this.isFanOn ? 'true' : 'false';
+                setMethod = 's_power';
+            }
+
+            this.fanDevice.call(setMethod, [powerState]).then(result => {
+                this.log.debug('Xiaomi Fan - successfully set power state to: %s. Result: %s', powerState, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while setting power state to: %s. Error: %s', powerState, err);
+            });
+        }
+    }
+
+    // rotation speed
+    getFanRotationSpeed() {
         if (this.fanDevice && this.fanService) {
-            this.fanDevice.call('get_prop', ["natural_level", "speed_level"]).then(result => {
-                if (result[0] > 0) {
-                    this.log.debug('Xiaomi Fan - got speed level from fan: %s. Mode: natural', result[0]);
-                    this.fanRotationSpeed = result[0];
+            let props = ['natural_level', 'speed_level'];
+            let result1Index = 0; // natural level
+            let result2Index = 1; // normal speed level
+
+            if (this.isDmakerFan() === true) {
+                props = ['all'];
+                result1Index = 2; // normal speed level
+                result2Index = 2; // normal speed level
+            }
+
+            this.fanDevice.call('get_prop', props).then(result => {
+                if (result[result1Index] > 0) {
+                    this.log.debug('Xiaomi Fan - got speed level from fan: %s. Mode: natural', result[result1Index]);
+                    this.fanRotationSpeed = result[result1Index];
                 } else {
-                    this.log.debug('Xiaomi Fan - got speed level from fan: %s. Mode: standard', result[1]);
-                    this.fanRotationSpeed = result[1];
+                    this.log.debug('Xiaomi Fan - got speed level from fan: %s. Mode: standard', result[result2Index]);
+                    this.fanRotationSpeed = result[result2Index];
                 }
                 if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanRotationSpeed);
             }).catch(err => {
@@ -272,118 +338,21 @@ class xiaomiFanAccessory {
         }
     }
 
-    updateFanChildLockState() {
-        if (this.fanDevice && this.fanService) {
-            this.fanDevice.call('get_prop', ['child_lock']).then(result => {
-                this.log.debug('Xiaomi Fan - got child lock state from fan: %s', result[0]);
-                this.isChildLockActive = result[0] === "on";
-                if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.isChildLockActive ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while requesting child lock state: %s', err);
-            });
-        }
-    }
-
-    updateFanSwingModeState() {
-        if (this.fanDevice && this.fanService) {
-            this.fanDevice.call('get_prop', ['angle_enable']).then(result => {
-                this.log.debug('Xiaomi Fan - got swing mode state from fan: %s', result[0]);
-                this.isSwingModeActive = result[0] === "on";
-                if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(this.isSwingModeActive ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while requesting swing mode state: %s', err);
-            });
-        }
-    }
-
-    updateFanNaturalModeState() {
-        if (this.fanDevice && this.fanService) {
-            this.fanDevice.call('get_prop', ['natural_level']).then(result => {
-                console.log(result[0]);
-                if (result[0] > 0) {
-                    this.log.debug('Xiaomi Fan - got mode from fan: natural');
-                    this.isNaturalModeEnabled = true;
-                } else {
-                    this.log.debug('Xiaomi Fan - got mode from fan: standard');
-                    this.isNaturalModeEnabled = false;
-                }
-                if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.isNaturalModeEnabled ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while requesting mode: %s', err);
-            });
-        }
-    }
-
-    updateFanBuzzerState() {
-        if (this.fanDevice && this.buzzerService) {
-            this.fanDevice.call('get_prop', ['buzzer']).then(result => {
-                this.log.debug('Xiaomi Fan - got buzzer state from fan: %s', result[0]);
-                if (result[0] > 0) {
-                    this.isBuzzerEnabled = true;
-                } else {
-                    this.isBuzzerEnabled = false;
-                }
-                if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.isBuzzerEnabled);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while requesting buzzer state: %s', err);
-            });
-        }
-    }
-
-    updateFanLedState() {
-        if (this.fanDevice && this.ledService) {
-            this.fanDevice.call('get_prop', ['led_b']).then(result => {
-                this.log.debug('Xiaomi Fan - got led state from fan: %s', result[0]);
-                if (result[0] === 0 || result[0] === 1) {
-                    this.isLedEnabled = true;
-                } else {
-                    this.isLedEnabled = false;
-                }
-                if (this.ledService) this.ledService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.isLedEnabled);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while requesting led state: %s', err);
-            });
-        }
-    }
-
-    // --== HOMEBRIDGE STATE SETTERS/GETTERS ==--
-    getPowerState(callback) {
+    setFanRotationSpeed(value) {
         if (this.fanDevice) {
-            this.updateFanPowerStatus();
-        }
-        callback(null, this.isFanOn ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
-    }
+            this.fanRotationSpeed = value;
 
-    setPowerState(state, callback) {
-        if (this.fanDevice) {
-            var powerState = state === Characteristic.Active.ACTIVE ? 'on' : 'off';
-            this.fanDevice.call('set_power', [powerState]).then(result => {
-                this.log.debug('Xiaomi Fan - successfully set power state to: %s. Result: %s', powerState, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while setting power state to: %s. Error: %s', powerState, err);
-            });
-            this.isFanOn = state === Characteristic.Active.ACTIVE;
-            callback();
-        }
-    }
-
-    getRotationSpeed(callback) {
-        if (this.fanDevice) {
-            this.updateFanRotationSpeed();
-        }
-        callback(null, this.fanRotationSpeed);
-    }
-
-    setRotationSpeed(value, callback) {
-        if (this.fanDevice) {
             if (value > 0) {
-                let isInNaturalMode = this.fanService.getCharacteristic(Characteristic.RotationDirection).value;
-                var modeMethodName = "set_speed_level";
-                if (isInNaturalMode == Characteristic.RotationDirection.COUNTER_CLOCKWISE) {
-                    modeMethodName = "set_natural_level";
+                let setMethod = "set_speed_level";
+                if (this.isNaturalModeEnabled === true) {
+                    setMethod = "set_natural_level";
                 }
 
-                this.fanDevice.call(modeMethodName, [value]).then(result => {
+                if (this.isDmakerFan() === true) {
+                    setMethod = 's_speed';
+                }
+
+                this.fanDevice.call(setMethod, [value]).then(result => {
                     if (result[0] === "ok") {
                         this.log.debug('Xiaomi Fan - successfully set speed level to: %d. Result: %s', value, result);
                     } else {
@@ -393,70 +362,308 @@ class xiaomiFanAccessory {
                     this.log.debug('Xiaomi Fan - error while setting speed level to: %d. Error: %s', value, err);
                 });
             }
-            this.fanRotationSpeed = value;
+        }
+    }
+
+    // child lock
+    getFanChildLockState() {
+        if (this.fanDevice && this.fanService) {
+            let onValue = 'on';
+            let props = ['child_lock'];
+            let resultIndex = 0;
+
+            if (this.isDmakerFan() === true) {
+                onValue = true;
+                props = ['all'];
+                resultIndex = 8;
+            }
+
+            this.fanDevice.call('get_prop', props).then(result => {
+                this.log.debug('Xiaomi Fan - got child lock state from fan: %s', result[resultIndex]);
+                this.isChildLockActive = result[resultIndex] === onValue;
+                if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.isChildLockActive ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while requesting child lock state: %s', err);
+            });
+        }
+    }
+
+    setFanChildLockState(state) {
+        if (this.fanDevice) {
+            this.isChildLockActive = state === Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED;
+
+            let childLockState = this.isChildLockActive ? 'on' : 'off';
+            let setMethod = 'set_child_lock';
+
+            if (this.isDmakerFan() === true) {
+                childLockState = this.isChildLockActive ? 'true' : 'false';
+                setMethod = 's_lock';
+            }
+
+            this.fanDevice.call(setMethod, [childLockState]).then(result => {
+                this.log.debug('Xiaomi Fan - successfully set child lock state to: %s. Result: %s', childLockState, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while setting child lock state to: %s. Error: %s', childLockState, err);
+            });
+        }
+    }
+
+    // swing mode
+    getFanSwingModeState() {
+        if (this.fanDevice && this.fanService) {
+            let onValue = 'on';
+            let props = ['angle_enable'];
+            let resultIndex = 0;
+
+            if (this.isDmakerFan() === true) {
+                onValue = true;
+                props = ['all'];
+                resultIndex = 3;
+            }
+
+            this.fanDevice.call('get_prop', props).then(result => {
+                this.log.debug('Xiaomi Fan - got swing mode state from fan: %s', result[resultIndex]);
+                this.isSwingModeActive = result[resultIndex] === onValue;
+                if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(this.isSwingModeActive ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while requesting swing mode state: %s', err);
+            });
+        }
+    }
+
+    setFanSwingModeState(state) {
+        if (this.fanDevice) {
+            this.isSwingModeActive = state === Characteristic.SwingMode.SWING_ENABLED;
+
+            let swingModeState = this.isSwingModeActive ? 'on' : 'off';
+            let setMethod = 'set_angle_enable';
+
+            if (this.isDmakerFan() === true) {
+                swingModeState = this.isSwingModeActive ? 'true' : 'false';
+                setMethod = 's_roll';
+            }
+
+            this.fanDevice.call(setMethod, [swingModeState]).then(result => {
+                this.log.debug('Xiaomi Fan - successfully set swing mode state to: %s. Result: %s', swingModeState, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while setting swing mode state to: %s. Error: %s', swingModeState, err);
+            });
+        }
+    }
+
+    // natural mode state
+    getFanNaturalModeState() {
+        if (this.fanDevice && this.fanService) {
+            let props = ['natural_level'];
+            let callback = result => {
+                if (result[0] > 0) {
+                    this.log.debug('Xiaomi Fan - got mode from fan: natural, result: %s', result);
+                    this.isNaturalModeEnabled = true;
+                } else {
+                    this.log.debug('Xiaomi Fan - got mode from fan: standard, result: %s', result);
+                    this.isNaturalModeEnabled = false;
+                }
+                if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.isNaturalModeEnabled ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
+            }
+
+            if (this.isDmakerFan() === true) {
+                props = ['all'];
+                callback = result => {
+                    if (result[1] === 'normal') {
+                        this.log.debug('Xiaomi Fan - got mode from fan: standard, result: %s', result);
+                        this.isNaturalModeEnabled = false;
+                    } else {
+                        this.log.debug('Xiaomi Fan - got mode from fan: natural, result: %s', result);
+                        this.isNaturalModeEnabled = true;
+                    }
+                    if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.isNaturalModeEnabled ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
+                }
+            }
+
+
+
+            this.fanDevice.call('get_prop', props).then(callback).catch(err => {
+                this.log.debug('Xiaomi Fan - error while requesting mode: %s', err);
+            });
+
+        }
+    }
+
+    setFanNaturalModeState(state) {
+        if (this.fanDevice) {
+            this.isNaturalModeEnabled = state === Characteristic.RotationDirection.COUNTER_CLOCKWISE;
+
+            let mode = this.isNaturalModeEnabled ? 'natural' : 'standard';
+
+            let valueState = this.fanRotationSpeed;
+            let setMethod = this.isNaturalModeEnabled ? 'set_natural_level' : 'set_speed_level';
+
+            if (this.isDmakerFan() === true) {
+                valueState = this.isNaturalModeEnabled ? 'nature' : 'normal';
+                setMethod = 's_mode';
+            }
+
+            this.fanDevice.call(setMethod, [valueState]).then(result => {
+                this.log.debug('Xiaomi Fan - successfully set mode to: %s. Current rotation speed: %d. Result: %s', mode, this.fanRotationSpeed, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while setting mode to: %s. Current rotation speed: %d. Error: %s', mode, this.fanRotationSpeed, err);
+            });
+
+        }
+    }
+
+    // move fan
+    moveFan(state, direction) {
+        if (this.fanDevice) {
+            this.log.debug('Xiaomi Fan - fan move service - direction: %s', direction);
+            this.fanDevice.call('set_move', [direction]).then(result => {
+                this.log.debug('Xiaomi Fan - fan move service - successfully moved fan to %s. Result: %s', direction, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - fan move service - error moving fan to: %s. Error: %s', direction, err);
+            });
+        }
+    }
+
+
+
+    // buzzer state
+    getFanBuzzerState() {
+        if (this.fanDevice && this.buzzerService) {
+            this.fanDevice.call('get_prop', ['buzzer']).then(result => {
+                this.log.debug('Xiaomi Fan - got buzzer state from fan: %s', result[0]);
+                if (result[0] > 0) {
+                    this.isBuzzerEnabled = true;
+                } else {
+                    this.isBuzzerEnabled = false;
+                }
+                if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.isBuzzerEnabled);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while requesting buzzer state: %s', err);
+            });
+        }
+    }
+
+    setFanBuzzerState(state) {
+        if (this.fanDevice) {
+            this.isBuzzerEnabled = state;
+
+            var buzzerVal = state === true ? 2 : 0;
+            this.fanDevice.call('set_buzzer', [buzzerVal]).then(result => {
+                this.log.debug('Xiaomi Fan - successfully set buzzer state to: %s. Result: %s', state, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while setting buzzer state to: %s. Error: %s', state, err);
+            });
+        }
+    }
+
+    // LED state
+    getFanLedState() {
+        if (this.fanDevice && this.ledService) {
+            this.fanDevice.call('get_prop', ['led_b']).then(result => {
+                this.log.debug('Xiaomi Fan - got led state from fan: %s', result[0]);
+                if (result[0] === 0 || result[0] === 1) {
+                    this.isLedEnabled = true;
+                } else {
+                    this.isLedEnabled = false;
+                }
+                if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.isLedEnabled);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while requesting led state: %s', err);
+            });
+        }
+    }
+
+    setFanLedState(state) {
+        if (this.fanDevice) {
+            this.isLedEnabled = state;
+
+            var ledBrighntess = state === true ? 0 : 2;
+            this.fanDevice.call('set_led_b', [ledBrighntess]).then(result => {
+                this.log.debug('Xiaomi Fan - successfully set led state to: %s. Result: %s', state, result);
+            }).catch(err => {
+                this.log.debug('Xiaomi Fan - error while setting led state to: %s. Error: %s', state, err);
+            });
+        }
+    }
+
+    // --== HOMEBRIDGE STATE SETTERS/GETTERS ==--
+    getPowerState(callback) {
+        if (this.fanDevice) {
+            this.getFanPowerStatus();
+        }
+        callback(null, this.isFanOn ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
+    }
+
+    setPowerState(state, callback) {
+        if (this.fanDevice) {
+            this.setFanPowerStatus(state);
             callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set power state`));
+        }
+    }
+
+    getRotationSpeed(callback) {
+        if (this.fanDevice) {
+            this.getFanRotationSpeed();
+        }
+        callback(null, this.fanRotationSpeed);
+    }
+
+    setRotationSpeed(value, callback) {
+        if (this.fanDevice) {
+            this.setFanRotationSpeed(value);
+            callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set rotation speed`));
         }
     }
 
     getLockPhysicalControls(callback) {
         if (this.fanDevice) {
-            this.updateFanChildLockState();
+            this.getFanChildLockState();
         }
         callback(null, this.isChildLockActive ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
     }
 
     setLockPhysicalControls(state, callback) {
         if (this.fanDevice) {
-            var childLockState = state === Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED ? 'on' : 'off';
-            this.fanDevice.call('set_child_lock', [childLockState]).then(result => {
-                this.log.debug('Xiaomi Fan - successfully set child lock state to: %s. Result: %s', childLockState, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while setting child lock state to: %s. Error: %s', childLockState, err);
-            });
-            this.isChildLockActive = state === Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED;
+            this.setFanChildLockState(state);
             callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set child lock state`));
         }
     }
 
     getSwingMode(callback) {
         if (this.fanDevice) {
-            this.updateFanSwingModeState();
+            this.getFanSwingModeState();
         }
         callback(null, this.isSwingModeActive ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
     }
 
     setSwingMode(state, callback) {
         if (this.fanDevice) {
-            var swingModeState = state === Characteristic.SwingMode.SWING_ENABLED ? 'on' : 'off';
-            this.fanDevice.call('set_angle_enable', [swingModeState]).then(result => {
-                this.log.debug('Xiaomi Fan - successfully set swing mode state to: %s. Result: %s', swingModeState, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while setting swing mode state to: %s. Error: %s', swingModeState, err);
-            });
-            this.isSwingModeActive = state === Characteristic.SwingMode.SWING_ENABLED;
+            this.setFanSwingModeState(state);
             callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set swing mode state`));
         }
     }
 
     getRotationDirection(callback) {
         if (this.fanDevice) {
-            this.updateFanNaturalModeState();
+            this.getFanNaturalModeState();
         }
         callback(null, this.isNaturalModeEnabled ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
     }
 
     setRotationDirection(state, callback) {
         if (this.fanDevice) {
-            let currentRotationSpeed = this.fanService.getCharacteristic(Characteristic.RotationSpeed).value;
-            var modeState = state === Characteristic.RotationDirection.COUNTER_CLOCKWISE ? 'set_natural_level' : 'set_speed_level';
-            var mode = state === Characteristic.RotationDirection.COUNTER_CLOCKWISE ? 'natural' : 'standard';
-            this.fanDevice.call(modeState, [currentRotationSpeed]).then(result => {
-                this.log.debug('Xiaomi Fan - successfully set mode to: %s. Current rotation speed: %d. Result: %s', mode, currentRotationSpeed, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while setting mode to: %s. Current rotation speed: %d. Error: %s', mode, currentRotationSpeed, err);
-            });
-            this.isNaturalModeEnabled = state === Characteristic.RotationDirection.COUNTER_CLOCKWISE;
+            this.setFanNaturalModeState(state);
             callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set natural mode state`));
         }
     }
 
@@ -466,45 +673,36 @@ class xiaomiFanAccessory {
 
     setMoveFanSwitch(state, callback, direction) {
         if (this.fanDevice) {
-            this.log.debug('Xiaomi Fan - fan move service - direction: %s', direction);
-            this.fanDevice.call('set_move', [direction]).then(result => {
-                this.log.debug('Xiaomi Fan - fan move service - successfully moved fan to %s. Result: %s', direction, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - fan move service - error moving fan to: %s. Error: %s', direction, err);
-            });
+            this.moveFan(state, direction);
             setTimeout(() => {
                 if (this.moveLeftService) this.moveLeftService.getCharacteristic(Characteristic.On).updateValue(false);
                 if (this.moveRightService) this.moveRightService.getCharacteristic(Characteristic.On).updateValue(false);
             }, 10);
             callback();
         } else {
-            callback(new Error('Xiaomi Fan - cannot connect to fan!'));
+            callback(new Error(`[${this.name}] Fan is not connected, cannot move fan`));
         }
     }
 
     getBuzzer(callback) {
         if (this.fanDevice) {
-            this.updateFanBuzzerState();
+            this.getFanBuzzerState();
         }
         callback(null, this.isBuzzerEnabled);
     }
 
     setBuzzer(state, callback) {
         if (this.fanDevice) {
-            var buzzerVal = state === true ? 2 : 0;
-            this.fanDevice.call('set_buzzer', [buzzerVal]).then(result => {
-                this.log.debug('Xiaomi Fan - successfully set buzzer state to: %s. Result: %s', state, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while setting buzzer state to: %s. Error: %s', state, err);
-            });
-            this.isBuzzerEnabled = state;
+            this.setFanBuzzerState(state);
             callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set buzzer state`));
         }
     }
 
     getLed(callback) {
         if (this.fanDevice) {
-            this.updateFanLedState();
+            this.getFanLedState();
         }
         callback(null, this.isLedEnabled);
     }
@@ -512,13 +710,10 @@ class xiaomiFanAccessory {
     setLed(state, callback) {
         var ledBrighntess = state === true ? 0 : 2;
         if (this.fanDevice) {
-            this.fanDevice.call('set_led_b', [ledBrighntess]).then(result => {
-                this.log.debug('Xiaomi Fan - successfully set led state to: %s. Result: %s', state, result);
-            }).catch(err => {
-                this.log.debug('Xiaomi Fan - error while setting led state to: %s. Error: %s', state, err);
-            });
-            this.isLedEnabled = state;
+            this.setFanLedState(state);
             callback();
+        } else {
+            callback(new Error(`[${this.name}] Fan is not connected, cannot set LED state`));
         }
     }
 
