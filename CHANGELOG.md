@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.9.2] - 2020-06-25
+### Added
+- Initial dmaker fan support
+
+### Changed
+- Fixed some typos
+- Optimized error handling
+
+
 ## [0.9.1] - 2020-06-19
 ### Fixed
 - Fixed a bug which might have caused a crash in some cases

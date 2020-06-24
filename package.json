@@ -1,11 +1,11 @@
 {
   "name": "homebridge-xiaomi-fan",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Homebridge plugin for Xiaomi Smartmi Fans",
   "main": "index.js",
   "engines": {
-    "node": ">=8.0.0",
-    "homebridge": ">=0.4.46"
+    "node": ">=12.9.0",
+    "homebridge": ">=1.0.0"
   },
   "keywords": [
     "homebridge-plugin",
@@ -15,6 +15,7 @@
     "smart",
     "mi",
     "zhimi",
+    "dmaker",
     "homekit"
   ],
   "author": "merdok",
