@@ -24,7 +24,7 @@
       "prefsDir": {
         "title": "Prefs directory",
         "type": "string",
-        "default": "~/.xiaomiFan",
+        "default": " ~/.homebridge/.xiaomiFan",
         "required": false
       },
       "pollingInterval": {
@@ -54,5 +54,3 @@
     }
   }
 }
-
-

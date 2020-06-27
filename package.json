@@ -1,6 +1,6 @@
 {
   "name": "homebridge-xiaomi-fan",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Homebridge plugin for Xiaomi Smartmi Fans",
   "main": "index.js",
   "engines": {
