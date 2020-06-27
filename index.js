@@ -1,7 +1,6 @@
 const miio = require('miio');
 const ping = require('ping');
 const fs = require('fs');
-const ppath = require('persist-path');
 const mkdirp = require('mkdirp');
 
 let Service;
@@ -16,7 +15,7 @@ module.exports = function(homebridge) {
 
 // --== MAIN CLASS ==--
 class xiaomiFanAccessory {
-  constructor(log, config) {
+  constructor(log, config, api) {
     this.log = log;
 
     // configuration
@@ -25,7 +24,7 @@ class xiaomiFanAccessory {
     this.token = config['token'];
     this.alivePollingInterval = config['pollingInterval'] || 5;
     this.alivePollingInterval = this.alivePollingInterval * 1000;
-    this.prefsDir = config['prefsDir'] || ppath('xiaomiFan/');
+    this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
     this.moveControl = config['moveControl'];
     if (this.moveControl == undefined) {
       this.moveControl = true;

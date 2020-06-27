@@ -77,7 +77,7 @@ ip address of your Fan.
 - `token` [required]
 The device token of your Fan.
 - `prefsDir` [optional]
-The directory where the fan device info will be stored. **Default: "~/.xiaomiFan"**
+The directory where the fan device info will be stored. **Default: "~/.homebridge/.xiaomiFan"**
 - `pollingInterval` [optional]
 The fan state background polling interval in seconds. **Default: 5**
 - `moveControl` [optional]
