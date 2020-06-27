@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.9.3] - 2020-06-28
+### Added
+- Added missing dmaker.fan.p5 properties
+
+### Changed
+- Optimized code
+
+
 ## [0.9.2] - 2020-06-25
 ### Added
 - Initial dmaker fan support
@@ -36,6 +44,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0] - 2019-08-04
 ### Initial release
-
-
-

@@ -1,6 +1,14 @@
+<span align="center">
+
 # homebridge-xiaomi-fan
 
-`homebridge-xiaomi-fan` is a plugin for Homebridge which allows you to control your Xiaomi Smartmi Fan! It should work with most smart fans from xiaomi.
+[![homebridge-xiaomi-fan](https://badgen.net/npm/v/homebridge-xiaomi-fan?icon=npm)](https://www.npmjs.com/package/homebridge-xiaomi-fan)
+[![mit-license](https://badgen.net/npm/license/lodash)](https://github.com/merdok/homebridge-webos-tv/blob/master/LICENSE)
+[![follow-me-on-twitter](https://badgen.net/twitter/follow/merdok_dev?icon=twitter)](https://twitter.com/merdok_dev)
+
+</span>
+
+`homebridge-xiaomi-fan` is a plugin for Homebridge which allows you to control Xiaomi Smartmi and Mija Fans! It should work with most smart fans from xiaomi.
 The goal is to make the fan fully controllable from the native Homekit iOS app and Siri.
 
 ### Features
@@ -9,6 +17,13 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * Rotate fan to the left or right by 5°
 * Turn on/off the buzzer
 * Turn on/off the LEDs
+
+### Known supported fan models
+* zhimi.fan.sa1
+* zhimi.fan.za1
+* zhimi.fan.za3
+* zhimi.fan.za4
+* dmaker.fan.p5
 
 ## Installation
 
@@ -71,9 +86,9 @@ Whether the move service is enabled. This allows to move the fan in 5° to the l
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. **Default: true**
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
-  
+
 ## Troubleshooting
-If you have any issues with the plugin or fan services then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues. 
+If you have any issues with the plugin or fan services then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues.
 
 Homebridge debug mode:
 ```sh
@@ -84,5 +99,3 @@ homebridge -D
 [miio](https://github.com/aholstenson/miio) - the Node.js remote control module for Xiaomi Mi devices.
 
 [HAP-NodeJS](https://github.com/KhaosT/HAP-NodeJS) & [homebridge](https://github.com/nfarina/homebridge) - for making this possible.
-
-
