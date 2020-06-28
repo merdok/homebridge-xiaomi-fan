@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.9.5] - 2020-06-29
+### Changed
+- Reset fan status after connection loss. When the fan was turned off manually then the Home fan status got stuck on the last reported state by the fan.
+
 ## [0.9.4] - 2020-06-28
 ### Changed
 - Changed default preferences directory
 
 ### Removed
 - Removed unused dependency
-
 
 ## [0.9.3] - 2020-06-28
 ### Added
@@ -38,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2020-06-14
 ### Added
-- Better device status retrieval. Requesting the device status should not longer make other accessories unresponsible.
+- Better device status retrieval. Requesting the device status should not longer make other accessories unresponsive.
 
 ### Changed
 - Fixed a bug which might have caused a crash when setting the speed level
