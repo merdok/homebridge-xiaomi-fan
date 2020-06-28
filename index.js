@@ -64,7 +64,7 @@ class xiaomiFanAccessory {
     this.checkFanStatusInterval = null;
 
     //fan status
-    this.resetFanInfo();
+    this.resetFanStatus();
 
     //prepare the services
     this.preapreFanServices();
@@ -79,13 +79,13 @@ class xiaomiFanAccessory {
     }
   }
 
-  resetFanInfo() {
+  resetFanStatus() {
     this.isFanOn = false;
     this.fanRotationSpeed = 0;
     this.isChildLockActive = false;
     this.isSwingModeActive = false;
     this.isNaturalModeEnabled = false;
-    this.isBuzzerEnabled = false;
+    this.isBuzzerEnabled = true;
     this.isLedEnabled = true;
   }
 
@@ -236,7 +236,7 @@ class xiaomiFanAccessory {
         this.log.info('Xiaomi Fan - lost connection to fan. Disconnecting...');
         this.fanDevice.destroy();
         this.fanDevice = undefined;
-        this.resetFanInfo(); // when lost connection to fan then it was probably manually turned off, in that case we need to reset the fan info.
+        this.resetFanStatus(); // when lost connection to fan then it was probably manually turned off, in that case we need to reset the fan info.
         callback(false);
       } else if (isAlive && !this.fanDevice) {
         this.log.info('Xiaomi Fan - found Fan in network. Trying to connect...');
@@ -766,3 +766,4 @@ class xiaomiFanAccessory {
     return this.enabledServices;
   }
 }
+
