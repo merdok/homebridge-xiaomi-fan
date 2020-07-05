@@ -63,11 +63,11 @@ Example configuration:
       "ledControl": true,
       "modeButtons": true,
       "shutdownTimer": true,
-	    "angleButtons": [
+      "angleButtons": [
          5,
          60,
          100
-	     ]
+       ]
     }
   ]  
 }
