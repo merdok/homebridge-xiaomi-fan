@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.0.0] - 2020-07-06
+### Added
+- Huge update update!
+- New `modeButtons` configuration field, which allows to show additional fan mode switch buttons
+- New `shutdownTimer` configuration field, which allows to enable a slider which can be used to set a shutdown timer
+- New `angleButtons` configuration field, which allows to create buttons that can be used to switch between oscillation angles
+- Home automations should now work
+- Adding new devices should not be more easier
+
+### Changed
+- The plugin was completely rewritten which should result in better status detection and more reliable controls.
+- `moveControl` configuration field has now a default value of `false`
+- Better logging
+- Fan status is now not dependant on a successful ping anymore
+- Updated README
+
+### Removed
+- Removed unused dependencies
+- Removed unnecessary checks
+
+
 ## [0.9.5] - 2020-06-29
 ### Changed
 - Reset fan status after connection loss. When the fan was turned off manually then the Home fan status got stuck on the last reported state by the fan.
