@@ -34,7 +34,7 @@
         "required": false
       },
       "moveControl": {
-        "title": "Show move left/right control",
+        "title": "Show move left/right control. Not supported by dmaker fans.",
         "type": "boolean",
         "default": true,
         "required": false
@@ -50,6 +50,26 @@
         "type": "boolean",
         "default": true,
         "required": false
+      },
+      "modeButtons": {
+        "title": "Show additional switches to switch between fan modes.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "shutdownTimer": {
+        "title": "Show a slider (light bulb) to control the auto shutdown timer.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "angleButtons": {
+        "title": "Angle buttons",
+        "description": "Allows to create buttons that can switch between oscillation angles.",
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
       }
     }
   }
