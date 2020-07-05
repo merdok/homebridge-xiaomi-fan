@@ -1,6 +1,8 @@
 {
   "pluginAlias": "xiaomifan",
   "pluginType": "accessory",
+  "headerDisplay": "Homebridge plugin for Xiaomi Fans",
+  "footerDisplay": "For a detailed description, see the [README](https://github.com/merdok/homebridge-xiaomi-fan#configuration-fields)",
   "schema": {
     "type": "object",
     "properties": {
@@ -36,7 +38,7 @@
       "moveControl": {
         "title": "Show move left/right control. Not supported by dmaker fans.",
         "type": "boolean",
-        "default": true,
+        "default": false,
         "required": false
       },
       "buzzerControl": {

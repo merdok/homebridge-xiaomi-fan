@@ -30,12 +30,12 @@ class xiaomiFanAccessory {
     this.name = config['name'];
     this.ip = config['ip'];
     this.token = config['token'];
-    this.alivePollingInterval = config['pollingInterval'] || 5;
-    this.alivePollingInterval = this.alivePollingInterval * 1000;
+    this.pollingInterval = config['pollingInterval'] || 5;
+    this.pollingInterval = this.pollingInterval * 1000;
     this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
     this.moveControl = config['moveControl'];
     if (this.moveControl == undefined) {
-      this.moveControl = true;
+      this.moveControl = false;
     }
     this.buzzerControl = config['buzzerControl'];
     if (this.buzzerControl == undefined) {
@@ -91,7 +91,7 @@ class xiaomiFanAccessory {
   /*----------========== SETUP ==========----------*/
 
   connectToFan() {
-    let checkDelayTime = this.alivePollingInterval * 6; // 6 times alive polling interval
+    let checkDelayTime = this.pollingInterval * 6; // 6 times alive polling interval
     miio.device({
       address: this.ip,
       token: this.token
@@ -112,11 +112,11 @@ class xiaomiFanAccessory {
     if (fanModel && fanModel.includes('dmaker')) {
       // do dmaker stuff
       this.logDebug(`Creating DmakerFan device!`);
-      this.fanDevice = new DmakerFan(miioDevice, this.ip, this.token, this.name, this.alivePollingInterval, this.log);
+      this.fanDevice = new DmakerFan(miioDevice, this.ip, this.token, this.name, this.pollingInterval, this.log);
     } else {
       // do smartmi stuff
       this.logDebug(`Creating SmartmiFan device!`);
-      this.fanDevice = new SmartmiFan(miioDevice, this.ip, this.token, this.name, this.alivePollingInterval, this.log);
+      this.fanDevice = new SmartmiFan(miioDevice, this.ip, this.token, this.name, this.pollingInterval, this.log);
     }
 
     // register for the fan update properties event

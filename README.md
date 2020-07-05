@@ -14,9 +14,12 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 ### Features
 * Integrates into homekit as a fan device
 * Control power, speed, swing mode and switch beetwen standard and natural wind
+* Set oscillation angle
 * Rotate fan to the left or right by 5°
 * Turn on/off the buzzer
 * Turn on/off the LEDs
+* Set a shutdown timer
+* HomeKit automations
 
 ### Known supported fan models
 * zhimi.fan.sa1
@@ -57,7 +60,14 @@ Example configuration:
       "pollingInterval": 10,
       "moveControl": true,
       "buzzerControl": true,
-      "ledControl": false
+      "ledControl": true,
+      "modeButtons": true,
+      "shutdownTimer": true,
+	    "angleButtons": [
+         5,
+         60,
+         100
+	     ]
     }
   ]  
 }
@@ -81,11 +91,17 @@ The directory where the fan device info will be stored. **Default: "~/.homebridg
 - `pollingInterval` [optional]
 The fan state background polling interval in seconds. **Default: 5**
 - `moveControl` [optional]
-Whether the move service is enabled. This allows to move the fan in 5° to the left or right. **Default: true**
+Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Not supported by dmaker fans. **Default: false**
 - `buzzerControl` [optional]
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. **Default: true**
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
+- `modeButtons` [optional]
+Show additional switches to change the fan mode. The fan mode can also be controlled by changing the fan rotation direction. **Default: false**
+- `shutdownTimer` [optional]
+Show a slider (light bulb) which allows to set a shutdown timer in minutes. **Default: false**
+- `angleButtons` [optional]
+Wheter the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. **Default: "" (disabled)**
 
 ## Troubleshooting
 If you have any issues with the plugin or fan services then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues.
