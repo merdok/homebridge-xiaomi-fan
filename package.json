@@ -22,7 +22,6 @@
   "license": "MIT",
   "dependencies": {
     "miio": "^0.15.6",
-    "ping": "^0.2.2",
     "mkdirp": "^0.5.1"
   },
   "repository": {
