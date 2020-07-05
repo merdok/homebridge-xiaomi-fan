@@ -101,7 +101,7 @@ Show additional switches to change the fan mode. The fan mode can also be contro
 - `shutdownTimer` [optional]
 Show a slider (light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
-Wheter the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. **Default: "" (disabled)**
+Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. **Default: "" (disabled)**
 
 ## Troubleshooting
 If you have any issues with the plugin or fan services then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues.
