@@ -53,7 +53,7 @@ class BaseFan extends EventEmitter {
       token: this.token
     }).then(device => {
       this.logInfo(`Connected to Fan ${device.miioModel}`);
-      this.logInfo(device);
+      this.logObj(device);
       this.miioFanDevice = device;
       this.setupFan();
     }).catch(err => {
@@ -73,15 +73,19 @@ class BaseFan extends EventEmitter {
     this.logDebug(`Setting up fan!`);
 
     // get the fan info
+    this.logDebug(`Getting device info.`);
     this.miioFanDevice.management.info().then((info) => {
       this.fanInfo = info;
     });
 
     // add the defined properties to the device
+    this.logDebug(`Adding properties to fan device.`);
     this.addPropertiesToFan();
 
     // start property polling
     this.startPropertyPolling();
+
+    this.logDebug(`Setup finished!`);
   }
 
   addPropertiesToFan() {
@@ -89,14 +93,14 @@ class BaseFan extends EventEmitter {
   }
 
   startPropertyPolling() {
-    this.logDebug(`Starting property polling!`);
+    this.logDebug(`Starting property polling.`);
 
     this.checkFanStatusInterval = setInterval(() => {
       this.miioFanDevice.poll().then(result => {
         //  this.logDebug(`Poll successful! Got data from fan!`);
         this.emit('fanPropertiesUpdated', result);
       }).catch(err => {
-        if(this.checkFanStatusInterval){
+        if (this.checkFanStatusInterval) {
           this.logDebug(`Poll failed! No response from Fan! Stopping polling! Error: ${err}`);
           clearInterval(this.checkFanStatusInterval);
           this.checkFanStatusInterval = undefined;
@@ -249,7 +253,7 @@ class BaseFan extends EventEmitter {
       }).catch(err => {
         this.logDebug(`Error while executing ${cmd} with value ${value}! Error: ${err}`);
       });
-    }else{
+    } else {
       this.logDebug(`Cannot execute ${cmd} with value ${value}! Device not connected!`);
     }
   }
@@ -273,8 +277,8 @@ class BaseFan extends EventEmitter {
     this.log.error(`[${this.name}] [ERROR] ` + message, ...args);
   }
 
-  logDebugObj(obj) {
-    this.logDebug(JSON.stringify(obj));
+  logObj(obj) {
+    this.log.info(obj);
   }
 
 

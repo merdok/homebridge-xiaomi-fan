@@ -56,11 +56,13 @@ class xiaomiFanAccessory {
     this.angleButtons = config['angleButtons'];
 
     if (!this.ip) {
-      this.logError(`[ERROR]'ip' not defined! Please check your 'config.json' file.`);
+      this.logError(`'ip' is required but not defined! Please check your 'config.json' file.`);
+      return;
     }
 
     if (!this.token) {
-      this.logError(`[ERROR]'token' not defined! Please check your 'config.json' file.`);
+      this.logError(`'token' is required but not defined! Please check your 'config.json' file.`);
+      return;
     }
 
     // check if prefs directory ends with a /, if not then add it
@@ -97,7 +99,7 @@ class xiaomiFanAccessory {
       token: this.token
     }).then(device => {
       this.logInfo(`Found Fan ${device.miioModel}`);
-      this.logInfo(device);
+      this.logObj(device);
       this.setupDevice(device);
     }).catch(err => {
       this.logDebug(`Fan not found! Retrying in ${checkDelayTime/1000} seconds!`);
@@ -647,8 +649,8 @@ class xiaomiFanAccessory {
     this.log.error(`[${this.name}] [ERROR] ` + message, ...args);
   }
 
-  logDebugObj(obj) {
-    this.logDebug(JSON.stringify(obj));
+  logObj(obj) {
+    this.log.info(obj);
   }
 
 
