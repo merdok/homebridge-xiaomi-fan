@@ -99,7 +99,7 @@ Whether the led service is enabled. This allows to turn on/off the fan LED. **De
 - `modeButtons` [optional]
 Show additional switches to change the fan mode. The fan mode can also be controlled by changing the fan rotation direction. **Default: false**
 - `shutdownTimer` [optional]
-Show a slider (light bulb) which allows to set a shutdown timer in minutes. **Default: false**
+Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
 Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. **Default: "" (disabled)**
 
