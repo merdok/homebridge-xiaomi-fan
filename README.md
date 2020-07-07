@@ -91,7 +91,7 @@ The directory where the fan device info will be stored. **Default: "~/.homebridg
 - `pollingInterval` [optional]
 The fan state background polling interval in seconds. **Default: 5**
 - `moveControl` [optional]
-Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Not supported by dmaker fans. **Default: false**
+Whether the move service is enabled. This allows to move the fan in 5° to the left or right. **Default: true**
 - `buzzerControl` [optional]
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. **Default: true**
 - `ledControl` [optional]

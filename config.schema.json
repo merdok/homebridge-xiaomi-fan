@@ -38,7 +38,7 @@
       "moveControl": {
         "title": "Show move left/right control. Not supported by dmaker fans.",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "required": false
       },
       "buzzerControl": {

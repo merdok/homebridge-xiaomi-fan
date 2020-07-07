@@ -8,7 +8,7 @@ class DmakerFan extends BaseFan {
 
   /*----------========== SETUP ==========----------*/
 
-  addPropertiesToFan(){
+  addPropertiesToFan() {
     // define the fan properties
     this.miioFanDevice.defineProperty('power');
     this.miioFanDevice.defineProperty('mode');
@@ -99,6 +99,14 @@ class DmakerFan extends BaseFan {
   async setNaturalModeEnabled(enabled) {
     let mode = enabled ? 'nature' : 'normal';
     return this.sendCommand('s_mode', mode, ['mode']);
+  }
+
+  async moveLeft() {
+    return this.sendCommand('m_roll', 'left');
+  }
+
+  async moveRight() {
+    return this.sendCommand('m_roll', 'right');
   }
 
   async setBuzzerEnabled(enabled) {

@@ -35,7 +35,7 @@ class xiaomiFanAccessory {
     this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
     this.moveControl = config['moveControl'];
     if (this.moveControl == undefined) {
-      this.moveControl = false;
+      this.moveControl = true;
     }
     this.buzzerControl = config['buzzerControl'];
     if (this.buzzerControl == undefined) {
