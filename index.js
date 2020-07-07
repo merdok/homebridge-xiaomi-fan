@@ -336,7 +336,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setPowerOn(isPowerOn);
       callback();
     } else {
-      callback(createError(`cannot set power state`));
+      callback(this.createError(`cannot set power state`));
     }
   }
 
@@ -361,7 +361,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setRotationSpeed(value);
       callback();
     } else {
-      callback(createError(`cannot set rotation speed`));
+      callback(this.createError(`cannot set rotation speed`));
     }
   }
 
@@ -379,7 +379,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setChildLock(isChildLockActive);
       callback();
     } else {
-      callback(createError(`cannot set child lock state`));
+      callback(this.createError(`cannot set child lock state`));
     }
   }
 
@@ -397,7 +397,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setSwingModeEnabled(isSwingModeActive);
       callback();
     } else {
-      callback(createError(`cannot set swing mode state`));
+      callback(this.createError(`cannot set swing mode state`));
     }
   }
 
@@ -415,7 +415,7 @@ class xiaomiFanAccessory {
       let mode = isNaturalModeEnabled ? FAN_MODE_NATURAL : FAN_MODE_STANDARD;
       this.setMode(true, callback, mode); // use the setMode method here to instantly update the switches
     } else {
-      callback(createError(`cannot set natural mode state`));
+      callback(this.createError(`cannot set natural mode state`));
     }
   }
 
@@ -436,7 +436,7 @@ class xiaomiFanAccessory {
       }, 15);
       callback();
     } else {
-      callback(createError(`cannot move fan`));
+      callback(this.createError(`cannot move fan`));
     }
   }
 
@@ -453,7 +453,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setBuzzerEnabled(state);
       callback();
     } else {
-      callback(createError(`cannot set buzzer state`));
+      callback(this.createError(`cannot set buzzer state`));
     }
   }
 
@@ -470,7 +470,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setLedEnabled(state);
       callback();
     } else {
-      callback(createError(`cannot set LED state`));
+      callback(this.createError(`cannot set LED state`));
     }
   }
 
@@ -509,7 +509,7 @@ class xiaomiFanAccessory {
       }
       callback();
     } else {
-      callback(createError(`cannot set mode state`));
+      callback(this.createError(`cannot set mode state`));
     }
   }
 
@@ -528,7 +528,7 @@ class xiaomiFanAccessory {
       }
       callback();
     } else {
-      callback(createError(`cannot set shutdown timer state`));
+      callback(this.createError(`cannot set shutdown timer state`));
     }
   }
 
@@ -545,7 +545,7 @@ class xiaomiFanAccessory {
       this.fanDevice.setShutdownTimer(level);
       callback();
     } else {
-      callback(createError(`cannot set shutdown timer time`));
+      callback(this.createError(`cannot set shutdown timer time`));
     }
   }
 
@@ -569,7 +569,7 @@ class xiaomiFanAccessory {
       }
       callback();
     } else {
-      callback(createError(`cannot set swing angle`));
+      callback(this.createError(`cannot set swing angle`));
     }
   }
 
