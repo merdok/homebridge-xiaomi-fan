@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
-## [0.9.5] - 2020-07-08
+## [1.0.2] - 2020-07-08
+### Changed
+- Fixed a possible crash
+
+
+## [1.0.1] - 2020-07-08
 ### Added
 - Added missing move control to dmaker fans which was by mistake removed with version 1.0.0
 
@@ -41,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Reset fan status after connection loss. When the fan was turned off manually then the Home fan status got stuck on the last reported state by the fan.
 
+
 ## [0.9.4] - 2020-06-28
 ### Changed
 - Changed default preferences directory
@@ -48,12 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Removed unused dependency
 
+
 ## [0.9.3] - 2020-06-28
 ### Added
 - Added missing dmaker.fan.p5 properties
 
 ### Changed
 - Optimized code
+
 
 ## [0.9.2] - 2020-06-25
 ### Added
