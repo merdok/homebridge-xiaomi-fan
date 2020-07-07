@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.9.5] - 2020-07-08
+### Added
+- Added missing move control to dmaker fans which was by mistake removed with version 1.0.0
+
+### Changed
+- Updated README
+- `moveControl` configuration field has now back a default value of `true`
+
+
 ## [1.0.0] - 2020-07-06
 ### Added
 - Huge update update!
