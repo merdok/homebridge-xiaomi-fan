@@ -44,7 +44,7 @@ class xiaomiFanAccessory {
     }
     this.naturalModeButton = config['naturalModeButton'];
     if (this.naturalModeButton == undefined) {
-      this.naturalModeButton = false;
+      this.naturalModeButton = true;
     }
     this.shutdownTimer = config['shutdownTimer'];
     if (this.shutdownTimer == undefined) {
@@ -185,10 +185,6 @@ class xiaomiFanAccessory {
       .addCharacteristic(Characteristic.SwingMode)
       .on('get', this.getSwingMode.bind(this))
       .on('set', this.setSwingMode.bind(this));
-    this.fanService
-      .addCharacteristic(Characteristic.RotationDirection) // used to switch between natural and normal mode
-      .on('get', this.getRotationDirection.bind(this))
-      .on('set', this.setRotationDirection.bind(this));
 
     this.enabledServices.push(this.fanService);
 
@@ -242,7 +238,7 @@ class xiaomiFanAccessory {
 
     // add natural mode button
     if (this.naturalModeButton) {
-      this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'standardModeService');
+      this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'naturalModeButtonService');
       this.naturalModeButtonService
         .getCharacteristic(Characteristic.On)
         .on('get', (callback) => {
@@ -387,24 +383,6 @@ class xiaomiFanAccessory {
     }
   }
 
-  getRotationDirection(callback) {
-    let isNaturalModeEnabled = false;
-    if (this.fanDevice) {
-      isNaturalModeEnabled = this.fanDevice.isNaturalModeEnabled();
-    }
-    callback(null, isNaturalModeEnabled ? Characteristic.RotationDirection.COUNTER_CLOCKWISE : Characteristic.RotationDirection.CLOCKWISE);
-  }
-
-  setRotationDirection(state, callback) {
-    if (this.fanDevice) {
-      let isNaturalModeEnabled = state === Characteristic.RotationDirection.COUNTER_CLOCKWISE;
-      this.setNaturalMode(isNaturalModeEnabled, callback); // use the setNaturalMode method here
-      this.updateNaturalModeSwitchAndRotation(state); // update the natural mode button if available
-    } else {
-      callback(this.createError(`cannot set natural mode state`));
-    }
-  }
-
   getMoveFanSwitch(callback) {
     callback(null, false);
   }
@@ -471,7 +449,6 @@ class xiaomiFanAccessory {
   setNaturalMode(state, callback) {
     if (this.fanDevice) {
       this.fanDevice.setNaturalModeEnabled(state);
-      this.updateNaturalModeSwitchAndRotation(state); // update the rotation direction switch
       callback();
     } else {
       callback(this.createError(`cannot set mode state`));
@@ -552,16 +529,11 @@ class xiaomiFanAccessory {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
       if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
       if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
+      if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
-      this.updateNaturalModeSwitchAndRotation(this.fanDevice.isNaturalModeEnabled());
       this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
     }
-  }
-
-  updateNaturalModeSwitchAndRotation(enabled) {
-    if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(enabled ? Characteristic.RotationDirection.COUNTER_CLOCKWISE : Characteristic.RotationDirection.CLOCKWISE);
-    if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.On).updateValue(enabled);
   }
 
   updateAngleButtonsAndSwingMode(activeAngle, enabled) {

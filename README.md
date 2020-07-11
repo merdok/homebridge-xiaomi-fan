@@ -97,7 +97,7 @@ Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
 - `naturalModeButton` [optional]
-Show an additional switch to quickly enable/disable the natural mode. The fan mode can also be controlled by changing the fan rotation direction. **Default: false**
+Show a switch which allows to quickly enable/disable the natural mode. **Default: true**
 - `shutdownTimer` [optional]
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
