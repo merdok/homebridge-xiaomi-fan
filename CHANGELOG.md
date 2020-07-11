@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.1.1] - 2020-07-12
+### Changed
+- the `naturalModeButton` configuration field has now a default value of `true`
+
+### Removed
+- Removed the rotation service which was used to toggle between fan modes, now replaced by a dedicated switch
+
+
 ## [1.1.0] - 2020-07-12
 ### Changed
 - Renamed `modeButtons` configuration field to `naturalModeButton`
