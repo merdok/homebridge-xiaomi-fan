@@ -12,9 +12,6 @@ const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const ACCESSORY_NAME = 'xiaomifan';
 const PLUGIN_VERSION = '1.0.2';
 
-const FAN_MODE_STANDARD = 'standard';
-const FAN_MODE_NATURAL = 'natural';
-
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -45,9 +42,9 @@ class xiaomiFanAccessory {
     if (this.ledControl == undefined) {
       this.ledControl = true;
     }
-    this.modeButtons = config['modeButtons'];
-    if (this.modeButtons == undefined) {
-      this.modeButtons = false;
+    this.naturalModeButton = config['naturalModeButton'];
+    if (this.naturalModeButton == undefined) {
+      this.naturalModeButton = false;
     }
     this.shutdownTimer = config['shutdownTimer'];
     if (this.shutdownTimer == undefined) {
@@ -243,31 +240,19 @@ class xiaomiFanAccessory {
       this.enabledServices.push(this.ledService);
     }
 
-    // add mode buttons
-    if (this.modeButtons) {
-      this.standardModeService = new Service.Switch(this.name + ' Standard mode', 'standardModeService');
-      this.standardModeService
+    // add natural mode button
+    if (this.naturalModeButton) {
+      this.naturalModeButtonService = new Service.Switch(this.name + 'Natural mode', 'standardModeService');
+      this.naturalModeButtonService
         .getCharacteristic(Characteristic.On)
         .on('get', (callback) => {
-          this.getMode(callback, FAN_MODE_STANDARD);
+          this.getNaturalMode(callback);
         })
         .on('set', (state, callback) => {
-          this.setMode(state, callback, FAN_MODE_STANDARD);
+          this.setNaturalMode(state, callback);
         });
 
-      this.enabledServices.push(this.standardModeService);
-
-      this.naturalModeService = new Service.Switch(this.name + ' Natural mode', 'naturalModeService');
-      this.naturalModeService
-        .getCharacteristic(Characteristic.On)
-        .on('get', (callback) => {
-          this.getMode(callback, FAN_MODE_NATURAL);
-        })
-        .on('set', (state, callback) => {
-          this.setMode(state, callback, FAN_MODE_NATURAL);
-        });
-
-      this.enabledServices.push(this.naturalModeService);
+      this.enabledServices.push(this.naturalModeButtonService);
     }
 
     // add shutdown timer slider
@@ -406,14 +391,14 @@ class xiaomiFanAccessory {
     if (this.fanDevice) {
       isNaturalModeEnabled = this.fanDevice.isNaturalModeEnabled();
     }
-    callback(null, isNaturalModeEnabled ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
+    callback(null, isNaturalModeEnabled ? Characteristic.RotationDirection.COUNTER_CLOCKWISE : Characteristic.RotationDirection.CLOCKWISE);
   }
 
   setRotationDirection(state, callback) {
     if (this.fanDevice) {
       let isNaturalModeEnabled = state === Characteristic.RotationDirection.COUNTER_CLOCKWISE;
-      let mode = isNaturalModeEnabled ? FAN_MODE_NATURAL : FAN_MODE_STANDARD;
-      this.setMode(true, callback, mode); // use the setMode method here to instantly update the switches
+      this.setNaturalMode(isNaturalModeEnabled, callback); // use the setNaturalMode method here
+      this.updateNaturalModeSwitchAndRotation(state); // update the natural mode button if available
     } else {
       callback(this.createError(`cannot set natural mode state`));
     }
@@ -474,39 +459,18 @@ class xiaomiFanAccessory {
     }
   }
 
-  getMode(callback, mode) {
+  getNaturalMode(callback) {
     if (this.fanDevice) {
-      if (mode === FAN_MODE_STANDARD && this.fanDevice.isNaturalModeEnabled() === false) {
-        callback(null, true);
-        return;
-      }
-
-      if (mode === FAN_MODE_NATURAL && this.fanDevice.isNaturalModeEnabled() === true) {
-        callback(null, true);
-        return;
-      }
+      callback(null, this.fanDevice.isNaturalModeEnabled());
+      return;
     }
     callback(null, false);
   }
 
-  setMode(state, callback, mode) {
+  setNaturalMode(state, callback) {
     if (this.fanDevice) {
-      if (state) {
-        if (mode === FAN_MODE_STANDARD) {
-          if (this.fanDevice.isNaturalModeEnabled() === true) {
-            this.fanDevice.setNaturalModeEnabled(false);
-          }
-        } else {
-          if (this.fanDevice.isNaturalModeEnabled() === false) {
-            this.fanDevice.setNaturalModeEnabled(true);
-          }
-        }
-        this.updateModeButtonsAndRotationDirection(mode);
-      } else {
-        setTimeout(() => {
-          this.updateModeButtonsAndRotationDirection(null);
-        }, 15);
-      }
+      this.fanDevice.setNaturalModeEnabled(state);
+      this.updateNaturalModeSwitchAndRotation(state); // update the rotation direction switch
       callback();
     } else {
       callback(this.createError(`cannot set mode state`));
@@ -576,7 +540,7 @@ class xiaomiFanAccessory {
 
   /*----------========== HELPERS ==========----------*/
 
-  updateFanStatus(isFanConnected) {
+  updateFanStatus() {
     if (this.fanDevice) {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
@@ -586,28 +550,14 @@ class xiaomiFanAccessory {
       if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
-      this.updateModeButtonsAndRotationDirection(null);
+      this.updateNaturalModeSwitchAndRotation(this.fanDevice.isNaturalModeEnabled());
       this.updateAngleButtons(null);
     }
   }
 
-  updateModeButtonsAndRotationDirection(mode) {
-    if (mode === null || mode === undefined) {
-      if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.isNaturalModeEnabled() ? Characteristic.SwingMode.COUNTER_CLOCKWISE : Characteristic.SwingMode.CLOCKWISE);
-      if (this.standardModeService) this.standardModeService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled() === false);
-      if (this.naturalModeService) this.naturalModeService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
-    } else {
-      if (mode === FAN_MODE_STANDARD) {
-        if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(Characteristic.SwingMode.CLOCKWISE);
-        if (this.standardModeService) this.standardModeService.getCharacteristic(Characteristic.On).updateValue(true);
-        if (this.naturalModeService) this.naturalModeService.getCharacteristic(Characteristic.On).updateValue(false);
-      }
-      if (mode === FAN_MODE_NATURAL) {
-        if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(Characteristic.SwingMode.COUNTER_CLOCKWISE);
-        if (this.standardModeService) this.standardModeService.getCharacteristic(Characteristic.On).updateValue(false);
-        if (this.naturalModeService) this.naturalModeService.getCharacteristic(Characteristic.On).updateValue(true);
-      }
-    }
+  updateNaturalModeSwitchAndRotation(enabled) {
+    if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(enabled ? Characteristic.RotationDirection.COUNTER_CLOCKWISE : Characteristic.RotationDirection.CLOCKWISE);
+    if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.On).updateValue(enabled);
   }
 
   updateAngleButtons(activeAngle) {
