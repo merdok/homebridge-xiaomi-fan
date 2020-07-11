@@ -242,7 +242,7 @@ class xiaomiFanAccessory {
 
     // add natural mode button
     if (this.naturalModeButton) {
-      this.naturalModeButtonService = new Service.Switch(this.name + 'Natural mode', 'standardModeService');
+      this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'standardModeService');
       this.naturalModeButtonService
         .getCharacteristic(Characteristic.On)
         .on('get', (callback) => {
@@ -380,6 +380,7 @@ class xiaomiFanAccessory {
     if (this.fanDevice) {
       let isSwingModeActive = state === Characteristic.SwingMode.SWING_ENABLED;
       this.fanDevice.setSwingModeEnabled(isSwingModeActive);
+      this.updateAngleButtonsAndSwingMode(null, isSwingModeActive); // update the angel buttons if enabled
       callback();
     } else {
       callback(this.createError(`cannot set swing mode state`));
@@ -516,7 +517,9 @@ class xiaomiFanAccessory {
   getAngleButtonState(callback, angle) {
     let angleButtonEnabled = false;
     if (this.fanDevice) {
-      angleButtonEnabled = this.fanDevice.getAngle() === angle;
+      if (this.fanDevice.isSwingModeEnabled() === true) {
+        angleButtonEnabled = this.fanDevice.getAngle() === angle;
+      }
     }
     callback(null, angleButtonEnabled);
   }
@@ -524,13 +527,15 @@ class xiaomiFanAccessory {
   setAngleButtonState(state, callback, angle) {
     if (this.fanDevice) {
       if (state) {
+        // if swing mode disabled then turn it on
+        if (this.fanDevice.isSwingModeEnabled() === false) {
+          this.fanDevice.setSwingModeEnabled(true);
+        }
         this.fanDevice.setAngle(angle);
-        this.updateAngleButtons(angle);
       } else {
-        setTimeout(() => {
-          this.updateAngleButtons(null);
-        }, 15);
+        this.fanDevice.setSwingModeEnabled(false);
       }
+      this.updateAngleButtonsAndSwingMode(angle, state);
       callback();
     } else {
       callback(this.createError(`cannot set swing angle`));
@@ -545,13 +550,12 @@ class xiaomiFanAccessory {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
-      if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(this.fanDevice.isSwingModeEnabled() ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
       if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
       if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
       this.updateNaturalModeSwitchAndRotation(this.fanDevice.isNaturalModeEnabled());
-      this.updateAngleButtons(null);
+      this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
     }
   }
 
@@ -560,8 +564,15 @@ class xiaomiFanAccessory {
     if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.On).updateValue(enabled);
   }
 
-  updateAngleButtons(activeAngle) {
+  updateAngleButtonsAndSwingMode(activeAngle, enabled) {
+    if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(enabled ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
     if (this.angleButtonsService) {
+      // if swing mode disabled then just disable all the angle switches
+      if (enabled === false) {
+        activeAngle = "disabled"; // use fake value for angle
+      }
+
+      // if angle not specified then automatically update the status
       if (activeAngle === undefined || activeAngle === null) {
         activeAngle = this.fanDevice.getAngle();
       }

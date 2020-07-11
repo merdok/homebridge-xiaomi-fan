@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `modeButtons` configuration field to `naturalModeButton`
 - the new `naturalModeButton` configuration field now creates just one switch which enables/disabled the natural mode
 - fixed the status of the rotation direction button(natural mode)
+- turning off an active angle button will now disable oscillation
+- turning on an angle button will now enable oscillation
 
 
 ## [1.0.2] - 2020-07-08
