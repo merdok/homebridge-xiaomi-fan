@@ -53,8 +53,8 @@
         "default": true,
         "required": false
       },
-      "modeButtons": {
-        "title": "Show additional switches to switch between fan modes.",
+      "naturalModeButton": {
+        "title": "Show an additional switch to quickly enable/disable the natural mode.",
         "type": "boolean",
         "default": false,
         "required": false

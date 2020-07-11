@@ -61,7 +61,7 @@ Example configuration:
       "moveControl": true,
       "buzzerControl": true,
       "ledControl": true,
-      "modeButtons": true,
+      "naturalModeButton": true,
       "shutdownTimer": true,
       "angleButtons": [
          5,
@@ -96,8 +96,8 @@ Whether the move service is enabled. This allows to move the fan in 5° to the l
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. **Default: true**
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
-- `modeButtons` [optional]
-Show additional switches to change the fan mode. The fan mode can also be controlled by changing the fan rotation direction. **Default: false**
+- `naturalModeButton` [optional]
+Show an additional switch to quickly enable/disable the natural mode. The fan mode can also be controlled by changing the fan rotation direction. **Default: false**
 - `shutdownTimer` [optional]
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
