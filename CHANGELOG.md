@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.1.0] - 2020-07-12
 ### Changed
 - Renamed `modeButtons` configuration field to `naturalModeButton`
 - the new `naturalModeButton` configuration field now creates just one switch which enables/disabled the natural mode
