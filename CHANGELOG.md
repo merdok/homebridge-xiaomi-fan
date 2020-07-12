@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.1.2] - 2020-07-12
+### Changed
+- Updated README
+- Updated config.schema.json
+
+
 ## [1.1.1] - 2020-07-12
 ### Changed
 - the `naturalModeButton` configuration field has now a default value of `true`

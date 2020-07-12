@@ -10,7 +10,7 @@ let Characteristic;
 
 const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const ACCESSORY_NAME = 'xiaomifan';
-const PLUGIN_VERSION = '1.1.1';
+const PLUGIN_VERSION = '1.1.2';
 
 
 module.exports = function(homebridge) {
