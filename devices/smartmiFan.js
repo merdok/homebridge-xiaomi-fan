@@ -8,7 +8,7 @@ class SmartmiFan extends BaseFan {
 
   /*----------========== SETUP ==========----------*/
 
-  addPropertiesToFan(){
+  addPropertiesToFan() {
     // define the fan properties
     this.miioFanDevice.defineProperty('angle');
     this.miioFanDevice.defineProperty('speed');
@@ -24,7 +24,10 @@ class SmartmiFan extends BaseFan {
     this.miioFanDevice.defineProperty('use_time');
 
     // get the properties
-    this.miioFanDevice._loadProperties();
+    this.miioFanDevice._loadProperties().then(() => {
+      // log the fan total use time
+      this.logInfo(`Fan total use time: ${this.getUseTime()} minutes.`);
+    });
   }
 
 
@@ -78,7 +81,7 @@ class SmartmiFan extends BaseFan {
   }
 
   getShutdownTimer() {
-    return Math.ceil(this.miioFanDevice.miioProperties().poweroff_time/60); // return in minutes, rounded up
+    return Math.ceil(this.miioFanDevice.miioProperties().poweroff_time / 60); // return in minutes, rounded up
   }
 
   isShutdownTimerEnabled() {
@@ -154,7 +157,7 @@ class SmartmiFan extends BaseFan {
   }
 
   async setShutdownTimer(minutes) {
-    let seconds = minutes*60;
+    let seconds = minutes * 60;
     return this.sendCommand('set_poweroff_time', seconds, ['poweroff_time']);
   }
 
