@@ -93,7 +93,7 @@ The fan state background polling interval in seconds. **Default: 5**
 - `moveControl` [optional]
 Whether the move service is enabled. This allows to move the fan in 5° to the left or right. **Default: true**
 - `buzzerControl` [optional]
-Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. **Default: true**
+Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. On Smartmi fans the rotation direction switch can be used to select between loud or quiet buzzer level. **Default: true**
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
 - `naturalModeButton` [optional]

@@ -158,7 +158,8 @@ class BaseFan extends EventEmitter {
   }
 
   getBuzzerLevel() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    // generic implementation for fans that does not support buzzer level
+    return this.isBuzzerEnabled() === true ? 1 : 0;
   }
 
   isBuzzerEnabled() {
@@ -225,7 +226,9 @@ class BaseFan extends EventEmitter {
   }
 
   async setBuzzerLevel(level) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    // generic implementation for fans that does not support buzzer level
+    let enabled = this.getBuzzerLevel() === 0 ? false : true;
+    this.setBuzzerEnabled(enabled);
   }
 
   async setLedEnabled(enabled) {

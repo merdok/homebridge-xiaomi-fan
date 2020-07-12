@@ -185,6 +185,10 @@ class xiaomiFanAccessory {
       .addCharacteristic(Characteristic.SwingMode)
       .on('get', this.getSwingMode.bind(this))
       .on('set', this.setSwingMode.bind(this));
+    this.fanService
+      .addCharacteristic(Characteristic.RotationDirection) // used to switch between buzzer levels
+      .on('get', this.getRotationDirection.bind(this))
+      .on('set', this.setRotationDirection.bind(this));
 
     this.enabledServices.push(this.fanService);
 
@@ -383,6 +387,26 @@ class xiaomiFanAccessory {
     }
   }
 
+  getRotationDirection(callback) {
+    let buzzerLevel = 2;
+    if (this.fanDevice) {
+      buzzerLevel = this.fanDevice.getBuzzerLevel();
+    }
+    callback(null, buzzerLevel === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
+  }
+
+  setRotationDirection(state, callback) {
+    if (this.fanDevice) {
+      if (this.fanDevice.isBuzzerEnabled() === true) {
+        let buzzerLevel = state === Characteristic.RotationDirection.CLOCKWISE ? 1 : 2;
+        this.fanDevice.setBuzzerLevel(buzzerLevel);
+      }
+      callback();
+    } else {
+      callback(this.createError(`cannot set buzzer level`));
+    }
+  }
+
   getMoveFanSwitch(callback) {
     callback(null, false);
   }
@@ -527,6 +551,7 @@ class xiaomiFanAccessory {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
+      if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.getBuzzerLevel() === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
       if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
       if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
       if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
