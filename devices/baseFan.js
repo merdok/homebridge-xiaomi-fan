@@ -53,7 +53,6 @@ class BaseFan extends EventEmitter {
       token: this.token
     }).then(device => {
       this.logInfo(`Connected to Fan ${device.miioModel}`);
-      this.logObj(device);
       this.miioFanDevice = device;
       this.setupFan();
     }).catch(err => {
@@ -265,25 +264,20 @@ class BaseFan extends EventEmitter {
   /*----------========== LOG ==========----------*/
 
   logInfo(message, ...args) {
-    this.log.info(`[${this.name}] ` + message, ...args);
+    this.log.info(message, ...args);
   }
 
   logWarn(message, ...args) {
-    this.log.warn(`[${this.name}] ` + message, ...args);
+    this.log.warn(message, ...args);
   }
 
   logDebug(message, ...args) {
-    this.log.debug(`[${this.name}] ` + message, ...args);
+    this.log.debug(message, ...args);
   }
 
   logError(message, ...args) {
-    this.log.error(`[${this.name}] [ERROR] ` + message, ...args);
+    this.log.error(`[ERROR] ` + message, ...args);
   }
-
-  logObj(obj) {
-    this.log.info(obj);
-  }
-
 
 }
 
