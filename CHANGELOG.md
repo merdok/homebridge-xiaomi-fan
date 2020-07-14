@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.1.4] - 2020-07-15
+### Changed
+- Improved log
+- Updated README
+
+
 ## [1.1.3] - 2020-07-13
 ### Added
 - Smartmi fans will now log the total use time in minutes when connected to the device
