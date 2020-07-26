@@ -1,6 +1,6 @@
 const MiioFan = require('./miioFan.js');
 
-class DmakerFan extends MiioFan {
+class MiioDmakerFanP5 extends MiioFan {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
     super(miioDevice, ip, token, deviceId, name, pollingInterval, log);
   }
@@ -124,4 +124,4 @@ class DmakerFan extends MiioFan {
 
 }
 
-module.exports = DmakerFan;
+module.exports = MiioDmakerFanP5;

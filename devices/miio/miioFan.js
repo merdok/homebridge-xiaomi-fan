@@ -1,4 +1,4 @@
-const BaseFan = require('./baseFan.js');
+const BaseFan = require('../baseFan.js');
 
 class MiioFan extends BaseFan {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {

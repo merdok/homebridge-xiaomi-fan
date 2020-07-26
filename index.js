@@ -1,9 +1,9 @@
 const miio = require('miio');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-const SmartmiFan = require('./devices/smartmiFan.js');
-const DmakerFan = require('./devices/dmakerFan.js');
-const MiotFan = require('./devices/miotFan.js');
+const MiioSmartmiFan = require('./devices/miio/miioSmartmiFan.js');
+const MiioDmakerFanP5 = require('./devices/miio/miioDmakerFanP5.js');
+const MiotFan = require('./devices/miot/miotFan.js');
 
 let Service, Characteristic, Homebridge, Accessory;
 
@@ -115,11 +115,11 @@ class xiaomiFanDevice {
     if (SMARTMI_MIIO_DEVICES.includes(fanModel)) {
       // do smartmi miio stuff
       this.logDebug(`Creating SmartmiFan device!`);
-      this.fanDevice = new SmartmiFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
+      this.fanDevice = new MiioSmartmiFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
     } else if (DMAKER_MIIO_DEVICES.includes(fanModel)) {
       // do dmaker miio stuff
       this.logDebug(`Creating DmakerFan device!`);
-      this.fanDevice = new DmakerFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
+      this.fanDevice = new MiioDmakerFanP5(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
     } else {
       //miot stuff, if none of the above found then just do miot stuff since all new devices will use that
       this.logDebug(`Creating MiotFan device!`);
