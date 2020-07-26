@@ -76,6 +76,8 @@ class BaseFan extends EventEmitter {
     this.logDebug(`Getting device info.`);
     this.miioFanDevice.management.info().then((info) => {
       this.fanInfo = info;
+    }).catch(err => {
+      this.logDebug(`Could not retrieve device info: ${err}`);
     });
 
     // get the fan deviceId if not specified

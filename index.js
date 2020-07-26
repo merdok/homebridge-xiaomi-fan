@@ -12,7 +12,7 @@ const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const ACCESSORY_NAME = 'xiaomifan';
 const PLUGIN_VERSION = '1.2.0';
 
-const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4','dmaker.fan.p5'];
+const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
 const DMAKER_MIIO_DEVICES = ['dmaker.fan.p5'];
 const DMAKER_MIOT_DEVICES = ['dmaker.fan.1c'];
 
