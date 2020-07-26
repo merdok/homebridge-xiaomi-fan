@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added support for the dmaker.fan.1c
+- New miotFan device class which adds initial support for xiaomi miot protocol fans
+- New optional deviceId configuration field
+
+### Changed
+- Optimized code to easily implement new xiaomi miot fans
+- Improved log
+- Updated README
+
+Note: The dmaker.fan.1c does not support `moveControl` (move left/right) and `angleButtons`.
+Since `moveControl` is automatically enabled this needs to be currently manually disabled in the config.json. Just set `moveControl` to false if you are using this device.
 
 
 ## [1.1.4] - 2020-07-15

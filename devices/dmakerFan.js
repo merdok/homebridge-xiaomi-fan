@@ -1,14 +1,14 @@
-const BaseFan = require('./baseFan.js');
+const MiioFan = require('./miioFan.js');
 
-class DmakerFan extends BaseFan {
-  constructor(miioDevice, ip, token, name, pollingInterval, log) {
-    super(miioDevice, ip, token, name, pollingInterval, log);
+class DmakerFan extends MiioFan {
+  constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
+    super(miioDevice, ip, token, deviceId, name, pollingInterval, log);
   }
 
 
   /*----------========== SETUP ==========----------*/
 
-  addPropertiesToFan() {
+  modelSpecificSetup() {
     // define the fan properties
     this.miioFanDevice.defineProperty('power');
     this.miioFanDevice.defineProperty('mode');

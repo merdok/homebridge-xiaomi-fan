@@ -1,9 +1,9 @@
 const miio = require('miio');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-const BaseFan = require('./devices/baseFan.js');
 const SmartmiFan = require('./devices/smartmiFan.js');
 const DmakerFan = require('./devices/dmakerFan.js');
+const MiotFan = require('./devices/miotFan.js');
 
 let Service;
 let Characteristic;
@@ -12,6 +12,9 @@ const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const ACCESSORY_NAME = 'xiaomifan';
 const PLUGIN_VERSION = '1.1.4';
 
+const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4','dmaker.fan.p5'];
+const DMAKER_MIIO_DEVICES = ['dmaker.fan.p5'];
+const DMAKER_MIOT_DEVICES = ['dmaker.fan.1c'];
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -27,6 +30,7 @@ class xiaomiFanAccessory {
     this.name = config['name'];
     this.ip = config['ip'];
     this.token = config['token'];
+    this.deviceId = config['deviceId'];
     this.pollingInterval = config['pollingInterval'] || 5;
     this.pollingInterval = this.pollingInterval * 1000;
     this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
@@ -52,13 +56,12 @@ class xiaomiFanAccessory {
     }
     this.angleButtons = config['angleButtons'];
 
-    if (!this.ip) {
-      this.logError(`'ip' is required but not defined! Please check your 'config.json' file.`);
-      return;
-    }
-
-    if (!this.token) {
-      this.logError(`'token' is required but not defined! Please check your 'config.json' file.`);
+    // check if we have mandatory device info
+    try {
+      if (!this.ip) throw new Error(`'ip' is required but not defined! Please check your 'config.json' file.`);
+      if (!this.token) throw new Error(`'token' is required but not defined! Please check your 'config.json' file.`);
+    } catch (error) {
+      this.logError(error);
       return;
     }
 
@@ -107,19 +110,25 @@ class xiaomiFanAccessory {
 
   setupDevice(miioDevice) {
     let fanModel = miioDevice.miioModel;
-    if (fanModel && fanModel.includes('dmaker')) {
-      // do dmaker stuff
-      this.logDebug(`Creating DmakerFan device!`);
-      this.fanDevice = new DmakerFan(miioDevice, this.ip, this.token, this.name, this.pollingInterval, this.log);
-    } else {
-      // do smartmi stuff
+
+    if(SMARTMI_MIIO_DEVICES.includes(fanModel)){
+      // do smartmi miio stuff
       this.logDebug(`Creating SmartmiFan device!`);
-      this.fanDevice = new SmartmiFan(miioDevice, this.ip, this.token, this.name, this.pollingInterval, this.log);
+      this.fanDevice = new SmartmiFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
+    }else if (DMAKER_MIIO_DEVICES.includes(fanModel)) {
+      // do dmaker miio stuff
+      this.logDebug(`Creating DmakerFan device!`);
+      this.fanDevice = new DmakerFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
+    } else {
+      //miot stuff, if none of the above found then just do miot stuff since all new devices will use that
+      this.logDebug(`Creating MiotFan device!`);
+      this.fanDevice = new MiotFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
+      this.updateFanServicesForMiotDevice();
     }
 
     // register for the fan update properties event
     if (this.fanDevice) {
-      this.fanDevice.on('fanPropertiesUpdated', () => {
+      this.fanDevice.on('fanPropertiesUpdated', (res) => {
         this.updateFanStatus();
       });
     }
@@ -303,6 +312,12 @@ class xiaomiFanAccessory {
     });
   }
 
+  updateFanServicesForMiotDevice(){
+    if (this.naturalModeButtonService) {
+      this.naturalModeButtonService.getCharacteristic(Characteristic.Name).updateValue(this.name + ' Sleep mode');
+    }
+  }
+
 
   /*----------========== HOMEBRIDGE STATE SETTERS/GETTERS ==========----------*/
 
@@ -420,7 +435,7 @@ class xiaomiFanAccessory {
       setTimeout(() => {
         if (this.moveLeftService) this.moveLeftService.getCharacteristic(Characteristic.On).updateValue(false);
         if (this.moveRightService) this.moveRightService.getCharacteristic(Characteristic.On).updateValue(false);
-      }, 15);
+      }, 20);
       callback();
     } else {
       callback(this.createError(`cannot move fan`));

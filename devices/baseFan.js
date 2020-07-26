@@ -4,12 +4,13 @@ var EventEmitter = require('events');
 const NOT_SUPPORTED_MSG = 'The requested command not supported is not supported by this device!';
 
 class BaseFan extends EventEmitter {
-  constructor(miioDevice, ip, token, name, pollingInterval, log) {
+  constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
     super();
 
     // config
     this.ip = ip;
     this.token = token;
+    this.deviceId = deviceId;
     this.name = name;
     this.log = log || console;
     this.pollingInterval = pollingInterval || 5000;
@@ -77,9 +78,15 @@ class BaseFan extends EventEmitter {
       this.fanInfo = info;
     });
 
-    // add the defined properties to the device
-    this.logDebug(`Adding properties to fan device.`);
-    this.addPropertiesToFan();
+    // get the fan deviceId if not specified
+    if (!this.deviceId) {
+      this.deviceId = this.miioFanDevice.id.replace(/^miio:/, '');
+      this.logDebug(`Got fan did: ${this.deviceId}.`);
+    }
+
+    // do a model specific fan setup, like adding properties
+    this.logDebug(`Doing model specific setup.`);
+    this.modelSpecificSetup();
 
     // start property polling
     this.startPropertyPolling();
@@ -87,27 +94,12 @@ class BaseFan extends EventEmitter {
     this.logDebug(`Setup finished!`);
   }
 
-  addPropertiesToFan() {
+  modelSpecificSetup() {
     this.logDebug(`Needs to be implemented by devices!`);
   }
 
   startPropertyPolling() {
-    this.logDebug(`Starting property polling.`);
-
-    this.checkFanStatusInterval = setInterval(() => {
-      this.miioFanDevice.poll().then(result => {
-        //  this.logDebug(`Poll successful! Got data from fan!`);
-        this.emit('fanPropertiesUpdated', result);
-      }).catch(err => {
-        if (this.checkFanStatusInterval) {
-          this.logDebug(`Poll failed! No response from Fan! Stopping polling! Error: ${err}`);
-          clearInterval(this.checkFanStatusInterval);
-          this.checkFanStatusInterval = undefined;
-          this.logDebug(`Trying to reconnect`);
-          this.connectToFan();
-        }
-      });
-    }, this.pollingInterval);
+    this.logDebug(`Needs to be implemented by devices!`);
   }
 
 
@@ -133,6 +125,17 @@ class BaseFan extends EventEmitter {
     return this.fanInfo;
   }
 
+  getProtocolType() {
+    this.logDebug(`Needs to be implemented by devices!`);
+  }
+
+  isMiioDevice() {
+    return this.getProtocolType() === 'miio';
+  }
+
+  isMiotDevice() {
+    return this.getProtocolType() === 'miot';
+  }
 
   /*----------========== STATUS ==========----------*/
 
@@ -166,7 +169,8 @@ class BaseFan extends EventEmitter {
   }
 
   getLedLevel() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    // generic implementation for fans that does not support buzzer level
+    return this.isLedEnabled() === true ? 0 : 2;
   }
 
   isLedEnabled() {
@@ -244,21 +248,6 @@ class BaseFan extends EventEmitter {
 
 
   /*----------========== HELPERS ==========----------*/
-
-  async sendCommand(cmd, value, refresh, refreshDelay = 200) {
-    if (this.miioFanDevice) {
-      return this.miioFanDevice.call(cmd, [value], {
-        refresh: refresh,
-        refreshDelay: refreshDelay
-      }).then(result => {
-        this.logDebug(`Successfully executed ${cmd} with value ${value}! Result: ${result}`);
-      }).catch(err => {
-        this.logDebug(`Error while executing ${cmd} with value ${value}! Error: ${err}`);
-      });
-    } else {
-      this.logDebug(`Cannot execute ${cmd} with value ${value}! Device not connected!`);
-    }
-  }
 
 
   /*----------========== LOG ==========----------*/
