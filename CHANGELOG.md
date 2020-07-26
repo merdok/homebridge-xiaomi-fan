@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Platform is now also the preferred way to use the plugin, when still using as an accessory a warning will be shown.
+- Optimized code
+- Reorganized project structure
 - Updated README
 
 Note: All users should switch to use the plugin as a platform since the accessory way will be removed soon. In order to switch to platform you just simply need to adjust your config.json as the example in the README.

@@ -1,19 +1,13 @@
 const miio = require('miio');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-const MiioSmartmiFan = require('./devices/miio/miioSmartmiFan.js');
-const MiioDmakerFanP5 = require('./devices/miio/miioDmakerFanP5.js');
-const MiotFan = require('./devices/miot/miotFan.js');
+const FanDeviceFactory = require('./devices/fanDeviceFactory.js');
 
 let Service, Characteristic, Homebridge, Accessory;
 
 const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const PLATFORM_NAME = 'xiaomifan';
 const PLUGIN_VERSION = '1.2.1';
-
-const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
-const DMAKER_MIIO_DEVICES = ['dmaker.fan.p5'];
-const DMAKER_MIOT_DEVICES = ['dmaker.fan.1c'];
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -34,7 +28,6 @@ class xiaomiFanDevice {
     if (!config.ip || !config.token) {
       return;
     }
-
 
     // configuration
     this.name = config['name'];
@@ -111,27 +104,20 @@ class xiaomiFanDevice {
 
   setupDevice(miioDevice) {
     let fanModel = miioDevice.miioModel;
+    this.fanDevice = FanDeviceFactory.createFanDevice(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log, this);
 
-    if (SMARTMI_MIIO_DEVICES.includes(fanModel)) {
-      // do smartmi miio stuff
-      this.logDebug(`Creating SmartmiFan device!`);
-      this.fanDevice = new MiioSmartmiFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
-    } else if (DMAKER_MIIO_DEVICES.includes(fanModel)) {
-      // do dmaker miio stuff
-      this.logDebug(`Creating DmakerFan device!`);
-      this.fanDevice = new MiioDmakerFanP5(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
-    } else {
-      //miot stuff, if none of the above found then just do miot stuff since all new devices will use that
-      this.logDebug(`Creating MiotFan device!`);
-      this.fanDevice = new MiotFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
-      this.updateFanServicesForMiotDevice();
-    }
-
-    // register for the fan update properties event
     if (this.fanDevice) {
+      // for miot devices update the fan service
+      if (this.fanDevice.isMiotDevice()) {
+        this.updateFanServicesForMiotDevice();
+      }
+
+      // register for the fan update properties event
       this.fanDevice.on('fanPropertiesUpdated', (res) => {
         this.updateFanStatus();
       });
+    } else {
+      this.logError(`Error creating fan device!`);
     }
 
     // save model name
