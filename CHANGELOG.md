@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [1.2.0] - 2020-07-26
 ### Added
 - Added support for the dmaker.fan.1c
+- Other new xiaomi fans should also now have initial support
 - New miotFan device class which adds initial support for xiaomi miot protocol fans
 - New optional deviceId configuration field
 
