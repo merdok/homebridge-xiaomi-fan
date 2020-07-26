@@ -1,7 +1,7 @@
 const miio = require('miio');
 var EventEmitter = require('events');
 
-const NOT_SUPPORTED_MSG = 'The requested command not supported is not supported by this device!';
+const NOT_SUPPORTED_MSG = 'Not supported: The requested command is not supported by this device!';
 
 class BaseFan extends EventEmitter {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
@@ -82,7 +82,7 @@ class BaseFan extends EventEmitter {
 
     // get the fan deviceId if not specified
     if (!this.deviceId) {
-      this.deviceId = this.miioFanDevice.id.replace(/^miio:/, '');
+      this.deviceId = this.getDeviceId();
       this.logDebug(`Got fan did: ${this.deviceId}.`);
     }
 
@@ -137,6 +137,10 @@ class BaseFan extends EventEmitter {
 
   isMiotDevice() {
     return this.getProtocolType() === 'miot';
+  }
+
+  getDeviceId(){
+    return this.miioFanDevice.id.replace(/^miio:/, '');
   }
 
   /*----------========== STATUS ==========----------*/
@@ -255,19 +259,19 @@ class BaseFan extends EventEmitter {
   /*----------========== LOG ==========----------*/
 
   logInfo(message, ...args) {
-    this.log.info(message, ...args);
+    this.log.info(`[${this.name}] ` + message, ...args);
   }
 
   logWarn(message, ...args) {
-    this.log.warn(message, ...args);
+    this.log.warn(`[${this.name}] ` + message, ...args);
   }
 
   logDebug(message, ...args) {
-    this.log.debug(message, ...args);
+    this.log.debug(`[${this.name}] ` + message, ...args);
   }
 
   logError(message, ...args) {
-    this.log.error(`[ERROR] ` + message, ...args);
+    this.log.error(`[${this.name}] [ERROR] ` + message, ...args);
   }
 
 }

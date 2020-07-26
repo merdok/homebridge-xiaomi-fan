@@ -1,75 +1,89 @@
 {
   "pluginAlias": "xiaomifan",
-  "pluginType": "accessory",
+  "pluginType": "platform",
+  "singular": true,
   "headerDisplay": "Homebridge plugin for Xiaomi Fans",
   "footerDisplay": "For a detailed description, see the [README](https://github.com/merdok/homebridge-xiaomi-fan#configuration-fields)",
   "schema": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "default": "My Xiaomi Fan",
-        "minLength": 1,
-        "required": true
-      },
-      "ip": {
-        "title": "Fan ip address",
-        "type": "string",
-        "required": true
-      },
-      "token": {
-        "title": "Fan device token",
-        "type": "string",
-        "required": true
-      },
-      "prefsDir": {
-        "title": "Prefs directory",
-        "type": "string",
-        "required": false
-      },
-      "pollingInterval": {
-        "title": "Background polling interval in seconds",
-        "type": "number",
-        "default": 5,
-        "required": false
-      },
-      "moveControl": {
-        "title": "Show move left/right control. Not supported by dmaker fans.",
-        "type": "boolean",
-        "default": true,
-        "required": false
-      },
-      "buzzerControl": {
-        "title": "Show buzzer control",
-        "type": "boolean",
-        "default": true,
-        "required": false
-      },
-      "ledControl": {
-        "title": "Show led control",
-        "type": "boolean",
-        "default": true,
-        "required": false
-      },
-      "naturalModeButton": {
-        "title": "Show a switch which allows to quickly enable/disable the natural mode.",
-        "type": "boolean",
-        "default": true,
-        "required": false
-      },
-      "shutdownTimer": {
-        "title": "Show a slider (light bulb) to control the auto shutdown timer.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "angleButtons": {
-        "title": "Angle buttons",
-        "description": "Allows to create buttons that can switch between oscillation angles.",
-        "type": "array",
-        "items": {
-          "type": "integer"
+    "devices": {
+      "title": "Devices",
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "default": "My Xiaomi Fan",
+            "minLength": 1,
+            "required": true
+          },
+          "ip": {
+            "title": "Fan ip address",
+            "type": "string",
+            "format": "ipv4",
+            "required": true
+          },
+          "token": {
+            "title": "Fan device token",
+            "type": "string",
+            "required": true
+          },
+          "deviceId": {
+            "title": "Fan device id (optional)",
+            "type": "string",
+            "required": false
+          },
+          "prefsDir": {
+            "title": "Prefs directory",
+            "type": "string",
+            "required": false
+          },
+          "pollingInterval": {
+            "title": "Background polling interval in seconds",
+            "type": "number",
+            "default": 5,
+            "required": false
+          },
+          "moveControl": {
+            "title": "Show move left/right control. Not supported by dmaker fans.",
+            "type": "boolean",
+            "default": true,
+            "required": false
+          },
+          "buzzerControl": {
+            "title": "Show buzzer control",
+            "type": "boolean",
+            "default": true,
+            "required": false
+          },
+          "ledControl": {
+            "title": "Show led control",
+            "type": "boolean",
+            "default": true,
+            "required": false
+          },
+          "naturalModeButton": {
+            "title": "Show a switch which allows to quickly enable/disable the natural mode.",
+            "type": "boolean",
+            "default": true,
+            "required": false
+          },
+          "shutdownTimer": {
+            "title": "Show a slider (light bulb) to control the auto shutdown timer.",
+            "type": "boolean",
+            "default": false,
+            "required": false
+          },
+          "angleButtons": {
+            "title": "Angle buttons",
+            "description": "Allows to create buttons that can switch between oscillation angles.",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
         }
       }
     }

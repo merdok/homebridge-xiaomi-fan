@@ -5,11 +5,10 @@ const SmartmiFan = require('./devices/smartmiFan.js');
 const DmakerFan = require('./devices/dmakerFan.js');
 const MiotFan = require('./devices/miotFan.js');
 
-let Service;
-let Characteristic;
+let Service, Characteristic, Homebridge, Accessory;
 
 const PLUGIN_NAME = 'homebridge-xiaomi-fan';
-const ACCESSORY_NAME = 'xiaomifan';
+const PLATFORM_NAME = 'xiaomifan';
 const PLUGIN_VERSION = '1.2.1';
 
 const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
@@ -19,12 +18,23 @@ const DMAKER_MIOT_DEVICES = ['dmaker.fan.1c'];
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory(PLUGIN_NAME, ACCESSORY_NAME, xiaomiFanAccessory);
+  Homebridge = homebridge;
+  Accessory = homebridge.platformAccessory;
+  homebridge.registerAccessory(PLUGIN_NAME, PLATFORM_NAME, xiaomiFanAccessory);
+  homebridge.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, webosTvPlatform, true);
 };
 
-class xiaomiFanAccessory {
+class xiaomiFanDevice {
   constructor(log, config, api) {
     this.log = log;
+    this.api = api;
+    this.startupError = null;
+
+    // check if we have mandatory device info
+    if (!config.ip || !config.token) {
+      return;
+    }
+
 
     // configuration
     this.name = config['name'];
@@ -55,15 +65,6 @@ class xiaomiFanAccessory {
       this.shutdownTimer = false;
     }
     this.angleButtons = config['angleButtons'];
-
-    // check if we have mandatory device info
-    try {
-      if (!this.ip) throw new Error(`'ip' is required but not defined! Please check your 'config.json' file.`);
-      if (!this.token) throw new Error(`'token' is required but not defined! Please check your 'config.json' file.`);
-    } catch (error) {
-      this.logError(error);
-      return;
-    }
 
     // check if prefs directory ends with a /, if not then add it
     if (this.prefsDir.endsWith('/') === false) {
@@ -111,11 +112,11 @@ class xiaomiFanAccessory {
   setupDevice(miioDevice) {
     let fanModel = miioDevice.miioModel;
 
-    if(SMARTMI_MIIO_DEVICES.includes(fanModel)){
+    if (SMARTMI_MIIO_DEVICES.includes(fanModel)) {
       // do smartmi miio stuff
       this.logDebug(`Creating SmartmiFan device!`);
       this.fanDevice = new SmartmiFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
-    }else if (DMAKER_MIIO_DEVICES.includes(fanModel)) {
+    } else if (DMAKER_MIIO_DEVICES.includes(fanModel)) {
       // do dmaker miio stuff
       this.logDebug(`Creating DmakerFan device!`);
       this.fanDevice = new DmakerFan(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log);
@@ -312,7 +313,7 @@ class xiaomiFanAccessory {
     });
   }
 
-  updateFanServicesForMiotDevice(){
+  updateFanServicesForMiotDevice() {
     if (this.naturalModeButtonService) {
       this.naturalModeButtonService.getCharacteristic(Characteristic.Name).updateValue(this.name + ' Sleep mode');
     }
@@ -606,26 +607,141 @@ class xiaomiFanAccessory {
   /*----------========== LOG ==========----------*/
 
   logInfo(message, ...args) {
-    this.log.info(message, ...args);
+    this.log.info(`[${this.name}] ` + message, ...args);
   }
 
   logWarn(message, ...args) {
-    this.log.warn(message, ...args);
+    this.log.warn(`[${this.name}] ` + message, ...args);
   }
 
   logDebug(message, ...args) {
-    this.log.debug(message, ...args);
+    this.log.debug(`[${this.name}] ` + message, ...args);
   }
 
   logError(message, ...args) {
-    this.log.error(`[ERROR] ` + message, ...args);
+    this.log.error(`[${this.name}] [ERROR] ` + message, ...args);
   }
 
+}
 
-  /*----------========== ACCESSORY SERVICES ==========----------*/
+
+
+// --== ACCESSORY STUFF  ==--
+class xiaomiFanAccessory extends xiaomiFanDevice {
+  constructor(log, config, api) {
+    super(log, config, api);
+
+    // check if we have mandatory device info
+    try {
+      if (!config.ip) throw new Error(`'ip' is required but not defined for ${config.name}!`);
+      if (!config.token) throw new Error(`'token' is required but not defined for ${config.name}!`);
+    } catch (error) {
+      this.logError(error);
+      this.logError(`Failed to create accessory, missing mandatory information!`);
+      this.logError(`Please check your config!`);
+      return;
+    }
+
+    this.log.warn(`[${this.name}] WARNING - your fan is set up as an accessory, and this is not the preferred way anymore. Plase set up your fan in the config.json as a platform device. See the README on how to do that. Setting up the fan as an accessory will be removed in future release!`);
+  }
 
   getServices() {
     return this.enabledServices;
   }
+}
 
+
+// --== PLATFORM STUFF  ==--
+class webosTvPlatform {
+  constructor(log, config, api) {
+    if (!config) {
+      return;
+    }
+
+    this.log = log;
+    this.api = api;
+    this.config = config;
+
+    if (this.api) {
+      this.api.on('didFinishLaunching', this.initDevices.bind(this));
+    }
+
+  }
+
+  initDevices() {
+    this.log.info('Init - initializing devices');
+
+    // read from config.devices
+    if (this.config.devices && Array.isArray(this.config.devices)) {
+      for (let device of this.config.devices) {
+        if (device) {
+          new xiaomiFanPlatformDevice(this.log, device, this.api);
+        }
+      }
+    } else if (this.config.devices) {
+      this.log.info('The devices property is not of type array. Cannot initialize. Type: %s', typeof this.config.devices);
+    }
+
+    // also read from config.fans
+    if (this.config.fans && Array.isArray(this.config.fans)) {
+      for (let fan of this.config.fans) {
+        if (fan) {
+          new xiaomiFanPlatformDevice(this.log, fan, this.api);
+        }
+      }
+    } else if (this.config.fans) {
+      this.log.info('The fans property is not of type array. Cannot initialize. Type: %s', typeof this.config.fans);
+    }
+
+    if (!this.config.devices && !this.config.fans) {
+      this.log.info('-------------------------------------------');
+      this.log.info('Init - no fan configuration found');
+      this.log.info('Missing devices or fans in your platform config');
+      this.log.info('-------------------------------------------');
+    }
+  }
+
+  configureAccessory(platformAccessory) {
+    // Won't be invoked
+  }
+
+  removeAccessory(platformAccessory) {
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [platformAccessory]);
+  }
+}
+
+
+class xiaomiFanPlatformDevice extends xiaomiFanDevice {
+  constructor(log, config, api) {
+    super(log, config, api);
+
+    // check if we have mandatory device info
+    try {
+      if (!config.ip) throw new Error(`'ip' is required but not defined for ${config.name}!`);
+      if (!config.token) throw new Error(`'token' is required but not defined for ${config.name}!`);
+    } catch (error) {
+      this.logError(error);
+      this.logError(`Failed to create platform device, missing mandatory information!`);
+      this.logError(`Please check your device config!`);
+      return;
+    }
+
+    this.log.info(`Init - initializing device with name: ${this.name}`);
+
+    // generate uuid
+    this.UUID = Homebridge.hap.uuid.generate(config.token + config.ip);
+
+    // prepare the fan accessory
+    this.fanAccesory = new Accessory(this.name, this.UUID, Homebridge.hap.Accessory.Categories.FAN);
+
+    // remove the preconstructed information service, since i will be adding my own
+    this.fanAccesory.removeService(this.fanAccesory.getService(Service.AccessoryInformation));
+
+    // add all the services to the accessory
+    for (let service of this.enabledServices) {
+      this.fanAccesory.addService(service);
+    }
+
+    this.api.publishExternalAccessories(PLUGIN_NAME, [this.fanAccesory]);
+  }
 }

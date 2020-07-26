@@ -52,41 +52,62 @@ sudo npm install -g homebridge-xiaomi-fan
 
 ## Configuration
 
-Add the accessory in `config.json` in your home directory inside `.homebridge`.
+Add the `xiaomifan` platform in `config.json` in your home directory inside `.homebridge`.
+
+Add your Fan or multiply Fans in the `devices` or `fans`  array.
 
 Example configuration:
 
 ```js
 {
-  "accessories": [
+  "platforms": [
     {
-      "accessory": "xiaomifan",
-      "name": "Xiaomi Fan 2s",
-      "ip": "192.168.0.40",
-      "token": "8305d8fba83f94bb5ad8f963b6c84c84",
-      "pollingInterval": 10,
-      "moveControl": true,
-      "buzzerControl": true,
-      "ledControl": true,
-      "naturalModeButton": true,
-      "shutdownTimer": true,
-      "angleButtons": [
-         5,
-         60,
-         100
-       ]
+      "platform": "xiaomifan",
+      "devices": [
+        {
+          "name": "Xiaomi Fan 2s",
+          "ip": "192.168.0.40",
+          "token": "8305d8fba83f94bb5ad8f963b6c84c84",
+          "pollingInterval": 10,
+          "moveControl": true,
+          "buzzerControl": true,
+          "ledControl": true,
+          "naturalModeButton": true,
+          "shutdownTimer": true,
+          "angleButtons": [
+             5,
+             60,
+             100
+           ]
+        }
+      ]
     }
-  ]  
+  ]
 }
 ```
 
-## Token
+### Token
 
 For the plugin to work the device token is required. For methods on how to find the token refer to this guide [obtaining mi device token](https://github.com/jghaanstra/com.xiaomi-miio/blob/master/docs/obtain_token.md).
 
-### Configuration fields
-- `accessory` [required]
+### Adding the Fan to the Home app
+If the Fan does not appear in your Home app you can add it manually by following this steps:
+
+1. Open the Home <img src="https://user-images.githubusercontent.com/3979615/78010622-4ea1d380-738e-11ea-8a17-e6a465eeec35.png" height="16.42px"> app on your device.
+2. Tap the Home tab, then tap <img src="https://user-images.githubusercontent.com/3979615/78010869-9aed1380-738e-11ea-9644-9f46b3633026.png" height="16.42px">.
+3. Tap *Add Accessory*, and select *I Don't Have a Code or Cannot Scan*.
+4. Select the fan accessory you want to pair.
+5. Enter the Homebridge PIN, this can be found under the QR code in Homebridge UI or your Homebridge logs, alternatively you can select *Use Camera* and scan the QR code again.
+
+For more info check the homebridge wiki [Connecting Homebridge To HomeKit](https://github.com/homebridge/homebridge/wiki/Connecting-Homebridge-To-HomeKit).
+
+### Configuration
+#### Platform Configuration fields
+- `platform` [required]
 Should always be "xiaomifan".
+- `devices` or `fans` [required]
+A list of your Fans.
+#### Fan Configuration fields
 - `name` [required]
 Name of your accessory.
 - `ip` [required]
