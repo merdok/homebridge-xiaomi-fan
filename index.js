@@ -104,12 +104,15 @@ class xiaomiFanDevice {
 
   setupDevice(miioDevice) {
     let fanModel = miioDevice.miioModel;
+
+    // create the fan device
     this.fanDevice = FanDeviceFactory.createFanDevice(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log, this);
 
     if (this.fanDevice) {
-      // for miot devices update the fan service
-      if (this.fanDevice.isMiotDevice()) {
-        this.updateFanServicesForMiotDevice();
+
+      // do devices specific fan service updates
+      if (this.fanDevice.supportsSleepMode()) {
+        this.renameNaturalModeButtonToSleepMode();
       }
 
       // register for the fan update properties event
@@ -120,6 +123,7 @@ class xiaomiFanDevice {
       this.logError(`Error creating fan device!`);
     }
 
+    //TODO: add the deviceID as serial number instead of ip? Ip use as a backup when no deviceid found!
     // save model name
     if (fs.existsSync(this.fanModelInfoFile) === false) {
       fs.writeFile(this.fanModelInfoFile, fanModel, (err) => {
@@ -299,7 +303,7 @@ class xiaomiFanDevice {
     });
   }
 
-  updateFanServicesForMiotDevice() {
+  renameNaturalModeButtonToSleepMode() {
     if (this.naturalModeButtonService) {
       this.naturalModeButtonService.getCharacteristic(Characteristic.Name).updateValue(this.name + ' Sleep mode');
     }

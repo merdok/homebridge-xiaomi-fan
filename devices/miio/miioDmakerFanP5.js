@@ -8,7 +8,7 @@ class MiioDmakerFanP5 extends MiioFan {
 
   /*----------========== SETUP ==========----------*/
 
-  modelSpecificSetup() {
+  addFanProperties() {
     // define the fan properties
     this.miioFanDevice.defineProperty('power');
     this.miioFanDevice.defineProperty('mode');
@@ -19,9 +19,57 @@ class MiioDmakerFanP5 extends MiioFan {
     this.miioFanDevice.defineProperty('light');
     this.miioFanDevice.defineProperty('beep_sound');
     this.miioFanDevice.defineProperty('child_lock');
+  }
 
-    // get the properties
-    this.miioFanDevice._loadProperties();
+
+  /*----------========== CAPABILITIES ==========----------*/
+
+  supportsPowerControl() {
+    return true;
+  }
+
+  supportFanSpeed() {
+    return true;
+  }
+
+  supportsOscillation() {
+    return true;
+  }
+
+  supportsOscillationAngle() {
+    return true;
+  }
+
+  oscillationAngleRange() {
+    return [0, 120];
+  }
+
+  supportsLeftRightMove() {
+    return true;
+  }
+
+  supportsNaturalMode() {
+    return true;
+  }
+
+  supportsChildLock() {
+    return true;
+  }
+
+  supportsPowerOffTimer() {
+    return true;
+  }
+
+  powerOffTimerUnit() {
+    return 'minutes';
+  }
+
+  supportsBuzzerControl() {
+    return true;
+  }
+
+  supportsLedControl() {
+    return true;
   }
 
 
@@ -60,15 +108,11 @@ class MiioDmakerFanP5 extends MiioFan {
   }
 
   getShutdownTimer() {
-    return this.miioFanDevice.miioProperties().time_off; // returns already in minutes
+    return this.miioFanDevice.miioProperties().time_off;
   }
 
   isShutdownTimerEnabled() {
     return this.getShutdownTimer() > 0;
-  }
-
-  getUseTime() {
-    return 0; // not supported by this fan
   }
 
 

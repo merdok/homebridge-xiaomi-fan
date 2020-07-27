@@ -1,7 +1,7 @@
 const miio = require('miio');
 var EventEmitter = require('events');
 
-const NOT_SUPPORTED_MSG = 'Not supported: The requested command is not supported by this device!';
+const COMMAND_NOT_SUPPORTED_MSG = 'Not supported: The requested command is not supported by this device!';
 
 class BaseFan extends EventEmitter {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
@@ -86,17 +86,34 @@ class BaseFan extends EventEmitter {
       this.logDebug(`Got fan did: ${this.deviceId}.`);
     }
 
-    // do a model specific fan setup, like adding properties
+    // do a model specific fan setup
     this.logDebug(`Doing model specific setup.`);
     this.modelSpecificSetup();
 
+    // add properties to the fan
+    this.logDebug(`Adding properties to fan.`);
+    this.addFanProperties();
+
+    // initial properties fetch
+    this.logDebug(`Doing initial properties fetch.`);
+    this.doInitalPropertiesFetch();
+
     // start property polling
+    this.logDebug(`Starting property polling.`);
     this.startPropertyPolling();
 
     this.logDebug(`Setup finished!`);
   }
 
   modelSpecificSetup() {
+    this.logDebug(`Needs to be implemented by devices!`);
+  }
+
+  addFanProperties() {
+    this.logDebug(`Needs to be implemented by devices!`);
+  }
+
+  doInitialPropertiesFetch() {
     this.logDebug(`Needs to be implemented by devices!`);
   }
 
@@ -139,99 +156,212 @@ class BaseFan extends EventEmitter {
     return this.getProtocolType() === 'miot';
   }
 
-  getDeviceId(){
+  getDeviceId() {
     return this.miioFanDevice.id.replace(/^miio:/, '');
   }
+
+
+  /*----------========== CAPABILITIES ==========----------*/
+
+  //  http://miot-spec.org/miot-spec-v2/instances?status=all
+  // Smartmi fan 3:
+  // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:zhimi-za5:2
+
+  supportsPowerControl() {
+    return true; // every fan supports that?
+  }
+
+  supportFanSpeed() {
+    return false; // free speed selection from 0% to 100%
+  }
+
+  supportFanSpeedRpm() {
+    return false; // whether the rpm speed value can be retrieved
+  }
+
+  supportsFanLevel() {
+    return false; // preconfigured fan levels which can be set
+  }
+
+  numberOfFanLevels() {
+    return 0; // how many fan levels
+  }
+
+  supportsOscillation() {
+    return false; // fan moves left to right
+  }
+
+  supportsOscillationAngle() {
+    return false; // if the a custom angle can be set for oscillation usually 0 to 120 degree
+  }
+
+  oscillationAngleRange() {
+    return []; // range for oscillation angle
+  }
+
+  supportsOscillationLevels() {
+    return false; // preconfigured levels for oscillation
+  }
+
+  oscillationLevels() {
+    return []; // array of levels (in degree) for oscillation
+  }
+  supportsLeftRightMove() {
+    return false; // whether the fan can be rotated left or right by 5 degree
+  }
+
+  supportsNaturalMode() {
+    return false; // whether the natural mode is supported
+  }
+
+  supportsSleepMode() {
+    return false; // whether the sleep mode is supported
+  }
+
+  supportsChildLock() {
+    return false; // should be clear
+  }
+
+  supportsPowerOffTimer() {
+    return false; // if a power off timer can be configured
+  }
+
+  powerOffTimerUnit() {
+    return ''; // the unit of the power off timer
+  }
+
+  supportsBuzzerControl() {
+    return false; // if buzzer can be configured
+  }
+
+  supportsBuzzerLevels() {
+    return false; // if buzzer can be set to different value
+  }
+
+  supportsLedControl() {
+    return false; // if indicator light can be configured
+  }
+
+  supportsLedLevels() {
+    return false; // if indicator light can be set to different value
+  }
+
+  supportsUseTime() {
+    return false; // whether the fan returns use time
+  }
+
+  supportsIonisator() {
+    return false; // whether the fan has a built in ionizer which can be controled
+  }
+
+  supportsTemperature() {
+    return false; // whether the fan has a built in temperature sensor which can be read
+  }
+
+  supportsRelativeHumidity() {
+    return false; // whether the fan has a built in humidity sensor which can be read
+  }
+
+  supportsRelativeHumidity() {
+    return false; // whether the fan has a built in humidity sensor which can be read
+  }
+
+  hasBuiltInBattery() {
+    return false; // whether the fan has a built in battery
+  }
+
+  supportsBatteryStateReporting() {
+    return false; // whether the fan reports the state of the built in battery
+  }
+
 
   /*----------========== STATUS ==========----------*/
 
   isPowerOn() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return false;
   }
 
   getRotationSpeed() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return 0;
   }
 
   isChildLockActive() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return false;
   }
 
   isSwingModeEnabled() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return false;
   }
 
   isNaturalModeEnabled() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return false;
   }
 
   getBuzzerLevel() {
-    // generic implementation for fans that does not support buzzer level
     return this.isBuzzerEnabled() === true ? 1 : 0;
   }
 
   isBuzzerEnabled() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return false;
   }
 
   getLedLevel() {
-    // generic implementation for fans that does not support buzzer level
-    return this.isLedEnabled() === true ? 0 : 2;
+    return this.isLedEnabled() === true ? 1 : 0;
   }
 
   isLedEnabled() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return false;
   }
 
   getShutdownTimer() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return 0;
   }
 
   isShutdownTimerEnabled() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return this.getShutdownTimer() > 0;
   }
 
   getUseTime() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    return 0;
   }
 
 
   /*----------========== COMMANDS ==========----------*/
 
   async setPowerOn(power) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setRotationSpeed(speed) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setChildLock(active) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setSwingModeEnabled(enabled) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setAngle(angle) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setNaturalModeEnabled(enabled) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async moveLeft() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async moveRight() {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setBuzzerEnabled(enabled) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setBuzzerLevel(level) {
@@ -241,15 +371,15 @@ class BaseFan extends EventEmitter {
   }
 
   async setLedEnabled(enabled) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setLedLevel(level) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
   async setShutdownTimer(minutes) {
-    this.logWarn(NOT_SUPPORTED_MSG);
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
 

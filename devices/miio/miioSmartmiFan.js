@@ -8,7 +8,7 @@ class MiioSmartmiFan extends MiioFan {
 
   /*----------========== SETUP ==========----------*/
 
-  modelSpecificSetup() {
+  addFanProperties() {
     // define the fan properties
     this.miioFanDevice.defineProperty('angle');
     this.miioFanDevice.defineProperty('speed');
@@ -22,12 +22,81 @@ class MiioSmartmiFan extends MiioFan {
     this.miioFanDevice.defineProperty('buzzer');
     this.miioFanDevice.defineProperty('led_b');
     this.miioFanDevice.defineProperty('use_time');
+  }
 
-    // get the properties
+  doInitialPropertiesFetch() {
+    // initial properties fetch
     this.miioFanDevice._loadProperties().then(() => {
       // log the fan total use time
       this.logInfo(`Fan total use time: ${this.getUseTime()} minutes.`);
     });
+  }
+
+
+  /*----------========== CAPABILITIES ==========----------*/
+
+  supportsPowerControl() {
+    return true;
+  }
+
+  supportFanSpeed() {
+    return true;
+  }
+
+  supportFanSpeedRpm() {
+    return true;
+  }
+
+  supportsOscillation() {
+    return true;
+  }
+
+  supportsOscillationAngle() {
+    return true;
+  }
+
+  oscillationAngleRange() {
+    return [0, 120];
+  }
+
+  supportsLeftRightMove() {
+    return true;
+  }
+
+  supportsNaturalMode() {
+    return true;
+  }
+
+  supportsChildLock() {
+    return true;
+  }
+
+  supportsPowerOffTimer() {
+    return true;
+  }
+
+  powerOffTimerUnit() {
+    return 'seconds';
+  }
+
+  supportsBuzzerControl() {
+    return true;
+  }
+
+  supportsBuzzerLevels() {
+    return true;
+  }
+
+  supportsLedControl() {
+    return true;
+  }
+
+  supportsLedLevels() {
+    return true;
+  }
+
+  supportsUseTime() {
+    return true;
   }
 
 

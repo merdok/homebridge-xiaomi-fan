@@ -8,12 +8,19 @@ class MiioFan extends BaseFan {
   /*----------========== SETUP ==========----------*/
 
   modelSpecificSetup() {
+    // none for miio fans
+  }
+
+  addFanProperties() {
     this.logDebug(`Needs to be implemented by devices!`);
   }
 
-  startPropertyPolling() {
-    this.logDebug(`Starting property polling.`);
+  doInitialPropertiesFetch() {
+    // initial properties fetch
+    this.miioFanDevice._loadProperties();
+  }
 
+  startPropertyPolling() {
     this.checkFanStatusInterval = setInterval(() => {
       this.miioFanDevice.poll().then(result => {
         //  this.logDebug(`Poll successful! Got data from fan!`);
@@ -36,6 +43,10 @@ class MiioFan extends BaseFan {
   getProtocolType() {
     return 'miio';
   }
+
+
+  /*----------========== CAPABILITIES ==========----------*/
+
 
   /*----------========== STATUS ==========----------*/
 

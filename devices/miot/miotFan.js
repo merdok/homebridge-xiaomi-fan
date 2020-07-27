@@ -20,28 +20,21 @@ class MiotFan extends BaseFan {
     // prepare/reset the variables
     this.properties = {};
     this.propertiesDefs = {};
+    this.commandDefs = {};
+  }
 
-    // define the fan properties
-    this.defineProperty('power', `{"did":"${this.deviceId}", "siid": 2, "piid": 1}`);
-    this.defineProperty('fanspeed', `{"did":"${this.deviceId}", "siid": 2, "piid": 2}`);
-    this.defineProperty('rotate_enabled', `{"did":"${this.deviceId}", "siid": 2, "piid": 3}`);
-    this.defineProperty('power_off_time', `{"did":"${this.deviceId}", "siid": 2, "piid": 10}`);
-    this.defineProperty('buzzer', `{"did":"${this.deviceId}", "siid": 2, "piid": 11}`);
-    this.defineProperty('light', `{"did":"${this.deviceId}", "siid": 2, "piid": 12}`);
-    this.defineProperty('child_lock', `{"did":"${this.deviceId}", "siid": 3, "piid": 1}`);
-    this.defineProperty('mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 7}`);
+  addFanProperties() {
+    this.logDebug(`Needs to be implemented by devices!`);
+  }
 
-    // get the properties
+  doInitialPropertiesFetch() {
+    // initial properties fetch
     this.requestAllProperties().catch(err => {
-      if (this.checkFanStatusInterval) {
-        this.logDebug(`Error on initial property request! Error: ${err}`);
-      }
-    });;
+      this.logDebug(`Error on initial property request! Error: ${err}`);
+    });
   }
 
   startPropertyPolling() {
-    this.logDebug(`Starting property polling.`);
-
     this.checkFanStatusInterval = setInterval(() => {
       this.requestAllProperties().then(result => {
         //  this.logDebug(`Poll successful! Got data from fan!`);
@@ -66,95 +59,14 @@ class MiotFan extends BaseFan {
   }
 
 
+  /*----------========== CAPABILITIES ==========----------*/
+
+
   /*----------========== STATUS ==========----------*/
-
-  isPowerOn() {
-    return this.properties.power === true;
-  }
-
-  getRotationSpeed() {
-    return this.properties.fanspeed * 33 || 0; // the fan has 3 levels for fan speed (no manual % set) that is why multiply the fan speed by 33
-  }
-
-  isChildLockActive() {
-    return this.properties.child_lock === true;
-  }
-
-  isSwingModeEnabled() {
-    return this.properties.rotate_enabled === true;
-  }
-
-  getAngle() {
-    return 0; // the fan does not support angle set
-  }
-
-  isNaturalModeEnabled() {
-    return this.properties.mode === 1;
-  }
-
-  isBuzzerEnabled() {
-    return this.properties.buzzer === true;
-  }
-
-  isLedEnabled() {
-    return this.properties.light === true;
-  }
-
-  getShutdownTimer() {
-    return this.properties.power_off_time; // returns already in minutes
-  }
-
-  isShutdownTimerEnabled() {
-    return this.getShutdownTimer() > 0;
-  }
-
-  getUseTime() {
-    return 0; // not supported by this fan
-  }
 
 
   /*----------========== COMMANDS ==========----------*/
 
-  async setPowerOn(power) {
-    return this.setProperty('power', power);
-  }
-
-  async setRotationSpeed(speed) {
-    let speedLevel = 1
-    if (speed < 33) {
-      speedLevel = 1
-    } else if (speed >= 33 && speed < 66) {
-      speedLevel = 2
-    } else if (speed >= 66) {
-      speedLevel = 3
-    }
-    return this.setProperty('fanspeed', speedLevel);
-  }
-
-  async setChildLock(active) {
-    return this.setProperty('child_lock', active);
-  }
-
-  async setSwingModeEnabled(enabled) {
-    return this.setProperty('rotate_enabled', enabled);
-  }
-
-  async setNaturalModeEnabled(enabled) {
-    let mode = enabled ? 1 : 0;
-    return this.setProperty('mode', mode);
-  }
-
-  async setBuzzerEnabled(enabled) {
-    return this.setProperty('buzzer', enabled);
-  }
-
-  async setLedEnabled(enabled) {
-    return this.setProperty('light', enabled);
-  }
-
-  async setShutdownTimer(minutes) {
-    return this.setProperty('power_off_time', minutes);
-  }
 
   /*----------========== HELPERS ==========----------*/
 
@@ -163,9 +75,27 @@ class MiotFan extends BaseFan {
     this.propertiesDefs[prop] = JSON.parse(def);
   }
 
+  defineCommand(cmd, def) {
+    this.commandDefs[prop] = JSON.parse(def);
+  }
+
   pushProperty(result, name, returnObj) {
     this.properties[name] = returnObj.value;
     result[name] = returnObj.value;
+  }
+
+  async sendCommnd(cmd, value) {
+    if (this.miioFanDevice) {
+      let cmdDef = Object.assign({}, this.commandDefs[cmd]); // create a copy of the cmdDef so that we do not modify the orignal def object
+      cmdDef.value = value;
+      return this.miioFanDevice.call('set_properties', [cmdDef]).then(result => {
+        this.logDebug(`Successfully send command ${cmd} with value ${value}! Result: ${JSON.stringify(result)}`);
+      }).catch(err => {
+        this.logDebug(`Error while executing command ${cmd} with value ${value}! Error: ${err}`);
+      });
+    } else {
+      this.logDebug(`Cannot execute command ${cmd} with value ${value}! Device not connected!`);
+    }
   }
 
   async setProperty(prop, value) {
