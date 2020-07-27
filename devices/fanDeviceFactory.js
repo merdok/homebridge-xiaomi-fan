@@ -2,7 +2,7 @@ const MiioSmartmiFan = require('./miio/miioSmartmiFan.js');
 const MiioDmakerFanP5 = require('./miio/miioDmakerFanP5.js');
 const MiotDmakerAcFan = require('./miot/miotDmakerAcFan.js');
 const MiotDmakerDcFan = require('./miot/miotDmakerDcFan.js');
-const MiotFan = require('./miot/miotFan.js');
+const MiotGenericFan = require('./miot/miotGenericFan.js');
 
 const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
 const DMAKER_MIIO_DEVICES = ['dmaker.fan.p5'];
@@ -34,9 +34,9 @@ class FanDeviceFactory {
         xiaomiFanDevice.logDebug(`Creating MiotDcFan device!`);
         fanDevice = new MiotDmakerDcFan(miioDevice, ip, token, deviceId, name, pollingInterval, log);
       } else {
-        //miot stuff, if none of the above found then just do miot stuff since all new devices will use that
-        xiaomiFanDevice.logDebug(`Creating MiotFan device!`);
-        fanDevice = new MiotFan(miioDevice, ip, token, deviceId, name, pollingInterval, log);
+        //miot generic stuff, if none of the above found then just do miot generic stuff since all new devices will use that
+        xiaomiFanDevice.logDebug(`Creating MiotGenericFan device!`);
+        fanDevice = new MiotGenericFan(miioDevice, ip, token, deviceId, name, pollingInterval, log);
       }
     }
 

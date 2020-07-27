@@ -5,6 +5,8 @@ class MiotDmakerAcFan extends BaseFan {
     super(miioDevice, ip, token, deviceId, name, pollingInterval, log);
   }
 
+  // dmaker.fan.1c
+  // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:dmaker-1c:1
 
   /*----------========== SETUP ==========----------*/
 
@@ -22,9 +24,6 @@ class MiotDmakerAcFan extends BaseFan {
 
 
   /*----------========== CAPABILITIES ==========----------*/
-
-  // dmaker.fan.1c
-  // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:dmaker-1c:1
 
   supportsPowerControl() {
     return true;
