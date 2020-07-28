@@ -70,18 +70,40 @@ class MiotFan extends BaseFan {
 
   /*----------========== HELPERS ==========----------*/
 
-  defineProperty(prop, def) {
+  defineProperty(prop, siid, piid) {
+    if(!prop || !siid || !piid){
+      this.logWarn(`Cannot add property! Missing required information! prop: ${prop},  siid: ${siid},  piid: ${piid}!`);
+      return;
+    }
+
+    let newProp = {};
+    newProp.did = this.deviceId;
+    newProp.siid = siid;
+    newProp.piid = piid;
+
     this.properties[prop] = 0;
-    this.propertiesDefs[prop] = JSON.parse(def);
+    this.propertiesDefs[prop] = newProp;
   }
 
-  defineCommand(cmd, def) {
-    this.commandDefs[prop] = JSON.parse(def);
+  defineCommand(cmd, siid, piid) {
+    if(!cmd || !siid || !piid){
+      this.logWarn(`Cannot add command! Missing required information! cmd: ${cmd},  siid: ${siid},  piid: ${piid}!`);
+      return;
+    }
+
+    let newCmd = {};
+    newCmd.did = this.deviceId;
+    newCmd.siid = siid;
+    newCmd.piid = piid;
+    
+    this.commandDefs[cmd] = newCmd;
   }
 
   pushProperty(result, name, returnObj) {
-    this.properties[name] = returnObj.value;
-    result[name] = returnObj.value;
+    if(returnObj.code && returnObj.code > 0){
+      this.properties[name] = returnObj.value;
+      result[name] = returnObj.value;
+    }
   }
 
   async sendCommnd(cmd, value) {

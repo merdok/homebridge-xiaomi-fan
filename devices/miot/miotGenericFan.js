@@ -12,15 +12,15 @@ class MiotGenericFan extends BaseFan {
 
   addFanProperties() {
     // define general fan properties
-    this.defineProperty('power', `{"did":"${this.deviceId}", "siid": 2, "piid": 1}`);
-    this.defineProperty('fan_level', `{"did":"${this.deviceId}", "siid": 2, "piid": 2}`);
-    this.defineProperty('child_lock', `{"did":"${this.deviceId}", "siid": 3, "piid": 1}`);
-    this.defineProperty('swing_mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 3}`);
-    this.defineProperty('swing_mode_angle', `{"did":"${this.deviceId}", "siid": 2, "piid": 5}`);
-    this.defineProperty('mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 7}`);
-    this.defineProperty('power_off_time', `{"did":"${this.deviceId}", "siid": 2, "piid": 10}`);
-    this.defineProperty('light', `{"did":"${this.deviceId}", "siid": 4, "piid": 3}`);
-    this.defineProperty('buzzer', `{"did":"${this.deviceId}", "siid": 5, "piid": 1}`);
+    this.defineProperty('power', 2, 1);
+    this.defineProperty('fan_level', 2, 2);
+    this.defineProperty('child_lock', 3, 1);
+    this.defineProperty('swing_mode', 2, 3);
+    this.defineProperty('swing_mode_angle', 2, 5);
+    this.defineProperty('mode', 2, 7);
+    this.defineProperty('power_off_time', 2, 10);
+    this.defineProperty('light', 4, 3);
+    this.defineProperty('buzzer', 5, 1);
   }
 
 
@@ -129,7 +129,7 @@ class MiotGenericFan extends BaseFan {
   }
 
   async setAngle(angle) {
-    if (angle > 120) angle = 120;   // the fans only support some predifened angles so i am not sure how this will beahve
+    if (angle > 120) angle = 120; // the fans only support some predifened angles so i am not sure how this will beahve
     if (angle < 0) angle = 0;
     return this.setProperty('swing_mode_angle', angle);
   }

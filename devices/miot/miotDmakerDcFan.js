@@ -13,35 +13,35 @@ class MiotDmakerDcFan extends BaseFan {
 
   addFanProperties() {
     // define general fan properties
-    this.defineProperty('power', `{"did":"${this.deviceId}", "siid": 2, "piid": 1}`);
-    this.defineProperty('fan_level', `{"did":"${this.deviceId}", "siid": 2, "piid": 2}`);
-    this.defineProperty('child_lock', `{"did":"${this.deviceId}", "siid": 3, "piid": 1}`);
+    this.defineProperty('power', 2, 1);
+    this.defineProperty('fan_level', 2, 2);
+    this.defineProperty('child_lock', 3, 1);
 
     // the dmaker p9 and 10 fans are basically the same, they property mapping is just different
     let fanModel = this.miioFanDevice.miioModel;
 
     if (fanModel === 'dmaker.fan.p9') {
       // dmaker.fan.p9
-      this.defineProperty('fan_speed', `{"did":"${this.deviceId}", "siid": 2, "piid": 11}`);
-      this.defineProperty('swing_mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 5}`);
-      this.defineProperty('swing_mode_angle', `{"did":"${this.deviceId}", "siid": 2, "piid": 6}`);
-      this.defineProperty('power_off_time', `{"did":"${this.deviceId}", "siid": 2, "piid": 8}`);
-      this.defineProperty('buzzer', `{"did":"${this.deviceId}", "siid": 2, "piid": 7}`);
-      this.defineProperty('light', `{"did":"${this.deviceId}", "siid": 2, "piid": 9}`);
-      this.defineProperty('mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 4}`);
+      this.defineProperty('fan_speed', 2, 11);
+      this.defineProperty('swing_mode', 2, 5);
+      this.defineProperty('swing_mode_angle', 2, 6);
+      this.defineProperty('power_off_time', 2, 8);
+      this.defineProperty('buzzer', 2, 7);
+      this.defineProperty('light', 2, 9);
+      this.defineProperty('mode', 2, 4);
 
-      this.defineCommand('set_move', `{"did":"${this.deviceId}", "siid": 2, "piid": 10}`);
+      this.defineCommand('set_move', 2, 10);
     } else {
       // dmaker.fan.p10
-      this.defineProperty('fan_speed', `{"did":"${this.deviceId}", "siid": 2, "piid": 10}`);
-      this.defineProperty('swing_mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 4}`);
-      this.defineProperty('swing_mode_angle', `{"did":"${this.deviceId}", "siid": 2, "piid": 5}`);
-      this.defineProperty('power_off_time', `{"did":"${this.deviceId}", "siid": 2, "piid": 6}`);
-      this.defineProperty('buzzer', `{"did":"${this.deviceId}", "siid": 2, "piid": 8}`);
-      this.defineProperty('light', `{"did":"${this.deviceId}", "siid": 2, "piid": 7}`);
-      this.defineProperty('mode', `{"did":"${this.deviceId}", "siid": 2, "piid": 3}`);
+      this.defineProperty('fan_speed', 2, 10);
+      this.defineProperty('swing_mode', 2, 4);
+      this.defineProperty('swing_mode_angle', 2, 5);
+      this.defineProperty('power_off_time', 2, 6);
+      this.defineProperty('buzzer', 2, 8);
+      this.defineProperty('light', 2, 7);
+      this.defineProperty('mode', 2, 3);
 
-      this.defineCommand('set_move', `{"did":"${this.deviceId}", "siid": 2, "piid": 9}`);
+      this.defineCommand('set_move', 2, 9);
     }
   }
 

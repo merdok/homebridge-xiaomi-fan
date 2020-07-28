@@ -24,12 +24,14 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * Homekit automations
 
 ### Known supported fan models
-* zhimi.fan.sa1 (Mijia DC Inverter Fan)
-* zhimi.fan.za1 (Smartmi Fan (2nd gen))
-* zhimi.fan.za3 (Smartmi Standing Fan 2)
-* zhimi.fan.za4 (Smartmi Standing Fan 2S)
-* dmaker.fan.p5 (Mijia Fan 1X)
-* dmaker.fan.1c (Mi Smart Standing Fan 1C or Mijia Fan 1C)
+* zhimi.fan.sa1  (Mijia DC Inverter Fan)
+* zhimi.fan.za1  (Smartmi Fan (2nd gen))
+* zhimi.fan.za3  (Smartmi Standing Fan 2)
+* zhimi.fan.za4  (Smartmi Standing Fan 2S)
+* dmaker.fan.p5  (Mijia Fan 1X)
+* dmaker.fan.p9  (Mijia Tower Fan)
+* dmaker.fan.p10 (Mijia 2-in-1 DC Inverter Fan 2)
+* dmaker.fan.1c  (Mi Smart Standing Fan 1C or Mijia Fan 1C)
 
 Note: The dmaker.fan.1c does not support `moveControl` (move left/right) and `angleButtons`.
 Since `moveControl` is automatically enabled this needs to be currently manually disabled in the config.json. Just set `moveControl` to false if you are using this device.
