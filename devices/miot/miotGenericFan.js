@@ -1,11 +1,11 @@
-const BaseFan = require('../baseFan.js');
+const MiotFan = require('./miotFan.js');
 
-class MiotGenericFan extends BaseFan {
+class MiotGenericFan extends MiotFan {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
     super(miioDevice, ip, token, deviceId, name, pollingInterval, log);
   }
 
-  // based on zhimi.fan.za5
+  // based on some zhimi.fan.za5 props
   // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:zhimi-za5:2
 
   /*----------========== SETUP ==========----------*/

@@ -95,6 +95,7 @@ class xiaomiFanDevice {
       this.logInfo(`Found Fan ${device.miioModel}`);
       this.setupDevice(device);
     }).catch(err => {
+      this.logDebug(err);
       this.logDebug(`Fan not found! Retrying in ${checkDelayTime/1000} seconds!`);
       setTimeout(() => {
         this.connectToFan();
@@ -123,10 +124,12 @@ class xiaomiFanDevice {
       this.logError(`Error creating fan device!`);
     }
 
-    //TODO: add the deviceID as serial number instead of ip? Ip use as a backup when no deviceid found!
-    // save model name
+    // save model name and deviceId
     if (fs.existsSync(this.fanModelInfoFile) === false) {
-      fs.writeFile(this.fanModelInfoFile, fanModel, (err) => {
+      let fanInfo = {};
+      fanInfo.model = fanModel;
+      fanInfo.deviceId = this.fanDevice.getDeviceId();
+      fs.writeFile(this.fanModelInfoFile, JSON.stringify(fanInfo), (err) => {
         if (err) {
           this.logDebug('Error occured could not write fan model info %s', err);
         } else {
@@ -145,9 +148,11 @@ class xiaomiFanDevice {
     // info service
 
     // currently i save the fan model info in a file and load if it exists
-    let modelName = this.name;
+    let fanInfo = {};
+    fanInfo.model = this.name;
+    fanInfo.deviceId = this.ip;
     try {
-      modelName = fs.readFileSync(this.fanModelInfoFile);
+      fanInfo = JSON.parse(fs.readFileSync(this.fanModelInfoFile));
     } catch (err) {
       this.log.debug('Xiaomi Fan - fan model info file does not exist');
     }
@@ -156,8 +161,8 @@ class xiaomiFanDevice {
     this.informationService
       .setCharacteristic(Characteristic.Name, this.name)
       .setCharacteristic(Characteristic.Manufacturer, 'Xiaomi')
-      .setCharacteristic(Characteristic.Model, modelName)
-      .setCharacteristic(Characteristic.SerialNumber, this.ip)
+      .setCharacteristic(Characteristic.Model, fanInfo.model)
+      .setCharacteristic(Characteristic.SerialNumber, fanInfo.deviceId)
       .setCharacteristic(Characteristic.FirmwareRevision, PLUGIN_VERSION);
 
 

@@ -57,6 +57,7 @@ class BaseFan extends EventEmitter {
       this.miioFanDevice = device;
       this.setupFan();
     }).catch(err => {
+      this.logDebug(err);
       this.logDebug(`Could not connect to the fan! Retrying in ${checkDelayTime/1000} seconds!`);
       setTimeout(() => {
         this.connectToFan();
@@ -96,7 +97,7 @@ class BaseFan extends EventEmitter {
 
     // initial properties fetch
     this.logDebug(`Doing initial properties fetch.`);
-    this.doInitalPropertiesFetch();
+    this.doInitialPropertiesFetch();
 
     // start property polling
     this.logDebug(`Starting property polling.`);

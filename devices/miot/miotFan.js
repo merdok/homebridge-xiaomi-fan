@@ -71,7 +71,7 @@ class MiotFan extends BaseFan {
   /*----------========== HELPERS ==========----------*/
 
   defineProperty(prop, siid, piid) {
-    if(!prop || !siid || !piid){
+    if (!prop || !siid || !piid) {
       this.logWarn(`Cannot add property! Missing required information! prop: ${prop},  siid: ${siid},  piid: ${piid}!`);
       return;
     }
@@ -85,8 +85,8 @@ class MiotFan extends BaseFan {
     this.propertiesDefs[prop] = newProp;
   }
 
-  defineCommand(cmd, siid, piid) {
-    if(!cmd || !siid || !piid){
+  defineCommand(cmd, siid, piid) { // have only write access permission
+    if (!cmd || !siid || !piid) {
       this.logWarn(`Cannot add command! Missing required information! cmd: ${cmd},  siid: ${siid},  piid: ${piid}!`);
       return;
     }
@@ -95,12 +95,12 @@ class MiotFan extends BaseFan {
     newCmd.did = this.deviceId;
     newCmd.siid = siid;
     newCmd.piid = piid;
-    
+
     this.commandDefs[cmd] = newCmd;
   }
 
   pushProperty(result, name, returnObj) {
-    if(returnObj.code && returnObj.code > 0){
+    if (returnObj.code && returnObj.code > 0) {
       this.properties[name] = returnObj.value;
       result[name] = returnObj.value;
     }

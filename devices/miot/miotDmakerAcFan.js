@@ -1,6 +1,6 @@
-const BaseFan = require('../baseFan.js');
+const MiotFan = require('./miotFan.js');
 
-class MiotDmakerAcFan extends BaseFan {
+class MiotDmakerAcFan extends MiotFan {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
     super(miioDevice, ip, token, deviceId, name, pollingInterval, log);
   }
