@@ -129,7 +129,7 @@ class MiotGenericFan extends BaseFan {
   }
 
   async setAngle(angle) {
-    if (angle > 120) angle = 120; // the fans only support some predifened angles so i am not sure how this will beahve
+    if (angle > 120) angle = 120;
     if (angle < 0) angle = 0;
     return this.setProperty('swing_mode_angle', angle);
   }

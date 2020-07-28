@@ -99,6 +99,10 @@ class MiioSmartmiFan extends MiioFan {
     return true;
   }
 
+  hasBuiltInBattery() {
+    return true;
+  }
+
 
   /*----------========== STATUS ==========----------*/
 

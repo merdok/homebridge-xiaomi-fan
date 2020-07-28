@@ -2,12 +2,14 @@ const MiioSmartmiFan = require('./miio/miioSmartmiFan.js');
 const MiioDmakerFanP5 = require('./miio/miioDmakerFanP5.js');
 const MiotDmakerAcFan = require('./miot/miotDmakerAcFan.js');
 const MiotDmakerDcFan = require('./miot/miotDmakerDcFan.js');
+const MiotSmartmiDcFan = require('./miot/miotSmartmiDcFan.js');
 const MiotGenericFan = require('./miot/miotGenericFan.js');
 
 const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
 const DMAKER_MIIO_DEVICES = ['dmaker.fan.p5'];
 const DMAKER_AC_MIOT_DEVICES = ['dmaker.fan.1c'];
 const DMAKER_DC_MIOT_DEVICES = ['dmaker.fan.p9', 'dmaker.fan.p10'];
+const SMARTMI_DC_MIOT_DEVICES = ['zhimi.fan.za5'];
 
 class FanDeviceFactory {
 
@@ -27,12 +29,16 @@ class FanDeviceFactory {
         fanDevice = new MiioDmakerFanP5(miioDevice, ip, token, deviceId, name, pollingInterval, log);
       } else if (DMAKER_AC_MIOT_DEVICES.includes(fanModel)) {
         // do dmaker miot ac stuff
-        xiaomiFanDevice.logDebug(`Creating MiotAcFan device!`);
+        xiaomiFanDevice.logDebug(`Creating MiotDmakerAcFan device!`);
         fanDevice = new MiotDmakerAcFan(miioDevice, ip, token, deviceId, name, pollingInterval, log);
       } else if (DMAKER_DC_MIOT_DEVICES.includes(fanModel)) {
         // do dmaker miot dc stuff
-        xiaomiFanDevice.logDebug(`Creating MiotDcFan device!`);
+        xiaomiFanDevice.logDebug(`Creating MiotDmakerDcFan device!`);
         fanDevice = new MiotDmakerDcFan(miioDevice, ip, token, deviceId, name, pollingInterval, log);
+      } else if (SMARTMI_DC_MIOT_DEVICES.includes(fanModel)) {
+        // do smartmi miot dc stuff
+        xiaomiFanDevice.logDebug(`Creating MiotSmartmiDcFan device!`);
+        fanDevice = new MiotSmartmiDcFan(miioDevice, ip, token, deviceId, name, pollingInterval, log);
       } else {
         //miot generic stuff, if none of the above found then just do miot generic stuff since all new devices will use that
         xiaomiFanDevice.logDebug(`Creating MiotGenericFan device!`);

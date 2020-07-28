@@ -206,6 +206,7 @@ class BaseFan extends EventEmitter {
   oscillationLevels() {
     return []; // array of levels (in degree) for oscillation
   }
+
   supportsLeftRightMove() {
     return false; // whether the fan can be rotated left or right by 5 degree
   }
@@ -256,10 +257,6 @@ class BaseFan extends EventEmitter {
 
   supportsTemperature() {
     return false; // whether the fan has a built in temperature sensor which can be read
-  }
-
-  supportsRelativeHumidity() {
-    return false; // whether the fan has a built in humidity sensor which can be read
   }
 
   supportsRelativeHumidity() {

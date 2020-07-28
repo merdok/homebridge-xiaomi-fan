@@ -1,13 +1,12 @@
 const BaseFan = require('../baseFan.js');
 
-class MiotDmakerDcFan extends BaseFan {
+class MiotSmartmiDcFan extends BaseFan {
   constructor(miioDevice, ip, token, deviceId, name, pollingInterval, log) {
     super(miioDevice, ip, token, deviceId, name, pollingInterval, log);
   }
 
-  // dmaker.fan.p9. dmaker.fan.p10
-  // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:dmaker-p9:1
-  // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:dmaker-p10:1
+  // zhimi.fan.za5
+  // https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:fan:0000A005:zhimi-za5:2
 
   /*----------========== SETUP ==========----------*/
 
@@ -16,33 +15,23 @@ class MiotDmakerDcFan extends BaseFan {
     this.defineProperty('power', 2, 1);
     this.defineProperty('fan_level', 2, 2);
     this.defineProperty('child_lock', 3, 1);
+    this.defineProperty('fan_speed', 6, 8);
+    this.defineProperty('swing_mode', 2, 3);
+    this.defineProperty('swing_mode_angle', 2, 5);
+    this.defineProperty('power_off_time', 2, 10);
+    this.defineProperty('buzzer', 5, 1);
+    this.defineProperty('light', 4, 3);
+    this.defineProperty('mode', 2, 7);
+    this.defineProperty('anion', 2, 11);
 
-    // the dmaker p9 and 10 fans are basically the same, they property mapping is just different
-    let fanModel = this.miioFanDevice.miioModel;
+    // read only
+    this.defineProperty('relative_humidity', 7, 1);
+    this.defineProperty('temperature', 7, 7);
+    this.defineProperty('battery', 6, 2);
+    this.defineProperty('fan_speed_rpm', 6, 4);
+    this.defineProperty('ac_power', 6, 5);
 
-    if (fanModel === 'dmaker.fan.p9') {
-      // dmaker.fan.p9
-      this.defineProperty('fan_speed', 2, 11);
-      this.defineProperty('swing_mode', 2, 5);
-      this.defineProperty('swing_mode_angle', 2, 6);
-      this.defineProperty('power_off_time', 2, 8);
-      this.defineProperty('buzzer', 2, 7);
-      this.defineProperty('light', 2, 9);
-      this.defineProperty('mode', 2, 4);
-
-      this.defineCommand('set_move', 2, 10);
-    } else {
-      // dmaker.fan.p10
-      this.defineProperty('fan_speed', 2, 10);
-      this.defineProperty('swing_mode', 2, 4);
-      this.defineProperty('swing_mode_angle', 2, 5);
-      this.defineProperty('power_off_time', 2, 6);
-      this.defineProperty('buzzer', 2, 8);
-      this.defineProperty('light', 2, 7);
-      this.defineProperty('mode', 2, 3);
-
-      this.defineCommand('set_move', 2, 9);
-    }
+    this.defineCommand('set_move', 6, 3);
   }
 
 
@@ -53,6 +42,10 @@ class MiotDmakerDcFan extends BaseFan {
   }
 
   supportFanSpeed() {
+    return true;
+  }
+
+  supportFanSpeedRpm() {
     return true;
   }
 
@@ -68,12 +61,12 @@ class MiotDmakerDcFan extends BaseFan {
     return true;
   }
 
-  supportsOscillationLevels() {
+  supportsOscillationAngle() {
     return true;
   }
 
-  oscillationLevels() {
-    return [30, 60, 60, 120, 140];
+  oscillationAngleRange() {
+    return [30, 120];
   }
 
   supportsLeftRightMove() {
@@ -93,7 +86,7 @@ class MiotDmakerDcFan extends BaseFan {
   }
 
   powerOffTimerUnit() {
-    return 'minutes';
+    return 'seconds';
   }
 
   supportsBuzzerControl() {
@@ -101,6 +94,30 @@ class MiotDmakerDcFan extends BaseFan {
   }
 
   supportsLedControl() {
+    return true;
+  }
+
+  supportsLedLevels() {
+    return true;
+  }
+
+  supportsIonisator() {
+    return true;
+  }
+
+  supportsTemperature() {
+    return true;
+  }
+
+  supportsRelativeHumidity() {
+    return true;
+  }
+
+  hasBuiltInBattery() {
+    return true;
+  }
+
+  supportsBatteryStateReporting() {
     return true;
   }
 
@@ -113,6 +130,10 @@ class MiotDmakerDcFan extends BaseFan {
 
   getRotationSpeed() {
     return this.properties.fan_speed;
+  }
+
+  getSpeed() {
+    return this.properties.fan_speed_rpm;
   }
 
   isChildLockActive() {
@@ -128,19 +149,23 @@ class MiotDmakerDcFan extends BaseFan {
   }
 
   isNaturalModeEnabled() {
-    return this.properties.mode === 1;
+    return this.properties.mode === 0;
   }
 
   isBuzzerEnabled() {
     return this.properties.buzzer === true;
   }
 
+  getLedLevel() {
+    return this.properties.light;
+  }
+
   isLedEnabled() {
-    return this.properties.light === true;
+    return this.getLedLevel() > 0;
   }
 
   getShutdownTimer() {
-    return this.properties.power_off_time;
+    return Math.ceil(this.properties.power_off_time / 60); // return in minutes, rounded up
   }
 
   isShutdownTimerEnabled() {
@@ -167,23 +192,22 @@ class MiotDmakerDcFan extends BaseFan {
   }
 
   async setAngle(angle) {
-    if (angle > 120) angle = 120; // the fans only support some predifened angles so i am not sure how this will beahve
-    if (angle < 0) angle = 0;
+    if (angle > 120) angle = 120;
+    if (angle < 30) angle = 30;
     return this.setProperty('swing_mode_angle', angle);
   }
 
-
   async setNaturalModeEnabled(enabled) {
-    let mode = enabled ? 1 : 0;
+    let mode = enabled ? 0 : 1;
     return this.setProperty('mode', mode);
   }
 
   async moveLeft() {
-    return this.sendCommnd('set_move', 1);
+    return this.sendCommnd('set_move', 'left');
   }
 
   async moveRight() {
-    return this.sendCommnd('set_move', 2);
+    return this.sendCommnd('set_move', 'right');
   }
 
   async setBuzzerEnabled(enabled) {
@@ -194,11 +218,18 @@ class MiotDmakerDcFan extends BaseFan {
     return this.setProperty('light', enabled);
   }
 
+  async setLedLevel(level) {
+    if (level > 100) level = 100;
+    if (level < 0) level = 0;
+    return this.setProperty('light', level);
+  }
+
   async setShutdownTimer(minutes) {
-    return this.setProperty('power_off_time', minutes);
+    let seconds = minutes * 60;
+    return this.setProperty('power_off_time', seconds);
   }
 
 
 }
 
-module.exports = MiotDmakerDcFan;
+module.exports = MiotSmartmiDcFan;
