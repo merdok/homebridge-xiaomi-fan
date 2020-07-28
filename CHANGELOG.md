@@ -5,11 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [1.3.0] - 2020-07-29
 ### Added
 - You can now configure this plugin to run as a platform
+- Added a fan device factory to detect which fan is used
+- Added support for the dmaker.fan.p9 fan (Mijia Tower Fan)
+- Added support for the dmaker.fan.p10 fan (Mijia 2-in-1 DC Inverter Fan 2)
+- Added support for the zhimi.fan.za5 fan (Smartmi Standing Fan 3)
+- Added generic miot fan
+- Added fan capabilities to easily distinguish what features fan models support
 
 ### Changed
 - Platform is now also the preferred way to use the plugin, when still using as an accessory a warning will be shown.
+- Optimized miot protocol
 - Optimized code
 - Reorganized project structure
 - Updated README
