@@ -30,7 +30,7 @@ class MiotFan extends BaseFan {
   doInitialPropertiesFetch() {
     // initial properties fetch
     this.requestAllProperties().catch(err => {
-      this.logDebug(`Error on initial property request! Error: ${err}`);
+      this.logDebug(`Error on initial property request! ${err}`);
     });
   }
 
@@ -41,7 +41,7 @@ class MiotFan extends BaseFan {
         this.emit('fanPropertiesUpdated', result);
       }).catch(err => {
         if (this.checkFanStatusInterval) {
-          this.logDebug(`Poll failed! No response from Fan! Stopping polling! Error: ${err}`);
+          this.logDebug(`Poll failed! No response from Fan! Stopping polling! ${err}`);
           clearInterval(this.checkFanStatusInterval);
           this.checkFanStatusInterval = undefined;
           this.logDebug(`Trying to reconnect`);
@@ -100,7 +100,7 @@ class MiotFan extends BaseFan {
   }
 
   pushProperty(result, name, returnObj) {
-    if (returnObj.code && returnObj.code > 0) {
+    if (returnObj.code === 0) {
       this.properties[name] = returnObj.value;
       result[name] = returnObj.value;
     }
@@ -113,7 +113,7 @@ class MiotFan extends BaseFan {
       return this.miioFanDevice.call('set_properties', [cmdDef]).then(result => {
         this.logDebug(`Successfully send command ${cmd} with value ${value}! Result: ${JSON.stringify(result)}`);
       }).catch(err => {
-        this.logDebug(`Error while executing command ${cmd} with value ${value}! Error: ${err}`);
+        this.logDebug(`Error while executing command ${cmd} with value ${value}! ${err}`);
       });
     } else {
       this.logDebug(`Cannot execute command ${cmd} with value ${value}! Device not connected!`);
@@ -130,7 +130,7 @@ class MiotFan extends BaseFan {
         this.properties[prop] = value;
         this.emit('fanPropertiesUpdated', result);
       }).catch(err => {
-        this.logDebug(`Error while setting property ${prop} to value ${value}! Error: ${err}`);
+        this.logDebug(`Error while setting property ${prop} to value ${value}! ${err}`);
       });
     } else {
       this.logDebug(`Cannot set property ${prop} to value ${value}! Device not connected!`);
@@ -148,9 +148,8 @@ class MiotFan extends BaseFan {
             this.pushProperty(obj, propKeys[i], result[i]);
           }
           return obj;
-        }).catch(err => {
-          this.logDebug(`Error while polling all properties! Error: ${err}`);
         });
+        // no catch here, catch has to be handled by caller, in that case the property polling
     } else {
       this.logDebug(`Cannot poll all properties! Device not connected!`);
     }
@@ -168,7 +167,7 @@ class MiotFan extends BaseFan {
           this.emit('fanPropertiesUpdated', result);
           return obj;
         }).catch(err => {
-          this.logDebug(`Error while requesting property ${prop}! Error: ${err}`);
+          this.logDebug(`Error while requesting property ${prop}! ${err}`);
         });
     } else {
       this.logDebug(`Cannot update property ${prop}! Device not connected!`);
