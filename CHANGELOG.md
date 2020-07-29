@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.3.1] - 2020-07-30
+### Added
+- Added support for zhimi.fan.v2 and zhimi.fan.v3 (Smartmi DC Pedestal Fan) fans
+
+### Fixed
+- Fixed a bug with the miot protocol which prevented property polling
+
+### Changed
+- Updated README
+
+
 ## [1.3.0] - 2020-07-29
 ### Added
 - You can now configure this plugin to run as a platform

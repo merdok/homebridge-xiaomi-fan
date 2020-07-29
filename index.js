@@ -7,7 +7,7 @@ let Service, Characteristic, Homebridge, Accessory;
 
 const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const PLATFORM_NAME = 'xiaomifan';
-const PLUGIN_VERSION = '1.3.0';
+const PLUGIN_VERSION = '1.3.1';
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
