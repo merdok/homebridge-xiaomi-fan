@@ -5,7 +5,7 @@ const MiotDmakerDcFan = require('./miot/miotDmakerDcFan.js');
 const MiotSmartmiDcFan = require('./miot/miotSmartmiDcFan.js');
 const MiotGenericFan = require('./miot/miotGenericFan.js');
 
-const SMARTMI_MIIO_DEVICES = ['zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
+const SMARTMI_MIIO_DEVICES = ['zhimi.fan.v2', 'zhimi.fan.v3', 'zhimi.fan.sa1', 'zhimi.fan.za1', 'zhimi.fan.za3', 'zhimi.fan.za4'];
 const DMAKER_MIIO_DEVICES = ['dmaker.fan.p5'];
 const DMAKER_AC_MIOT_DEVICES = ['dmaker.fan.1c'];
 const DMAKER_DC_MIOT_DEVICES = ['dmaker.fan.p9', 'dmaker.fan.p10'];
