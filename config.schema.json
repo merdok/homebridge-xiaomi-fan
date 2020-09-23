@@ -78,7 +78,7 @@
           },
           "angleButtons": {
             "title": "Angle buttons",
-            "description": "Allows to create buttons that can switch between oscillation angles.",
+            "description": "Allows to create buttons that can switch between oscillation angles. Not supported by the dmaker.fan.1c!",
             "type": "array",
             "items": {
               "type": "integer"

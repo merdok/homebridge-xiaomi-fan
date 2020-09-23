@@ -116,9 +116,7 @@ class xiaomiFanDevice {
     if (this.fanDevice) {
 
       // do devices specific fan service updates
-      if (this.fanDevice.supportsSleepMode()) {
-        this.renameNaturalModeButtonToSleepMode();
-      }
+      this.updateServicesForDevice();
 
       // register for the fan update properties event
       this.fanDevice.on('fanPropertiesUpdated', (res) => {
@@ -322,10 +320,28 @@ class xiaomiFanDevice {
     });
   }
 
-  renameNaturalModeButtonToSleepMode() {
-    if (this.naturalModeButtonService) {
-      this.naturalModeButtonService.getCharacteristic(Characteristic.Name).updateValue(this.name + ' Sleep mode');
+  /*----------========== UPDATE SERVICES BASED ON DEVICE ==========----------*/
+
+  updateServicesForDevice() {
+    // rename natural mode to sleep mode
+    if (this.fanDevice.supportsSleepMode()) {
+      if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.Name).updateValue(this.name + ' Sleep mode');
     }
+
+    // remove move control on unsupported devices
+    if (this.fanDevice.supportsLeftRightMove() === false) {
+      if (this.moveLeftService) this.fanAccesory.removeService(this.moveLeftService);
+      if (this.moveRightService) this.fanAccesory.removeService(this.moveRightService);
+    }
+
+    // remove angle buttons on unsupported devices
+    if (this.fanDevice.supportsOscillationAngle() === false) {
+      this.angleButtonsService.forEach((value, i) => {
+        this.fanAccesory.removeService(value);
+      });
+      this.angleButtonsService = null;
+    }
+
   }
 
 

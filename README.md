@@ -36,7 +36,6 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * dmaker.fan.p10 (Mi Smart Standing Fan 2)
 
 Note: The dmaker.fan.1c does not support `moveControl` (move left/right) and `angleButtons`.
-Since `moveControl` is automatically enabled this needs to be currently manually disabled in the config.json. Just set `moveControl` to false if you are using this device.
 
 ## Installation
 
