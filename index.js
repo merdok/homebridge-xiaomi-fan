@@ -14,18 +14,22 @@ module.exports = function(homebridge) {
   Characteristic = homebridge.hap.Characteristic;
   Homebridge = homebridge;
   Accessory = homebridge.platformAccessory;
-  homebridge.registerAccessory(PLUGIN_NAME, PLATFORM_NAME, xiaomiFanAccessory);
-  homebridge.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, webosTvPlatform, true);
+  homebridge.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, xiaomiFanPlatform, true);
 };
 
 class xiaomiFanDevice {
   constructor(log, config, api) {
     this.log = log;
     this.api = api;
-    this.startupError = null;
 
     // check if we have mandatory device info
-    if (!config.ip || !config.token) {
+    try {
+      if (!config.ip) throw new Error(`'ip' is required but not defined for ${config.name}!`);
+      if (!config.token) throw new Error(`'token' is required but not defined for ${config.name}!`);
+    } catch (error) {
+      this.logError(error);
+      this.logError(`Failed to create platform device, missing mandatory information!`);
+      this.logError(`Please check your device config!`);
       return;
     }
 
@@ -59,6 +63,10 @@ class xiaomiFanDevice {
     }
     this.angleButtons = config['angleButtons'];
 
+
+    this.logInfo(`Init - got Fan configuration, initializing device with name: ${this.name}`);
+
+
     // check if prefs directory ends with a /, if not then add it
     if (this.prefsDir.endsWith('/') === false) {
       this.prefsDir = this.prefsDir + '/';
@@ -69,15 +77,11 @@ class xiaomiFanDevice {
       mkdirp(this.prefsDir);
     }
 
-    // create fan model info file
-    this.fanModelInfoFile = this.prefsDir + 'info_' + this.ip.split('.').join('') + '_' + this.token;
-
     // prepare variables
     this.fanDevice = undefined;
-    this.enabledServices = [];
 
     //prepare the services
-    this.preapreFanServices();
+    this.initFanAccessory();
 
     //start the fan discovery
     this.connectToFan();
@@ -120,55 +124,67 @@ class xiaomiFanDevice {
       this.fanDevice.on('fanPropertiesUpdated', (res) => {
         this.updateFanStatus();
       });
+
+      //  remove the information service here and add the new one after setup is complete, this way i do not have to save anything?
+      this.updateInformationService();
+
     } else {
       this.logError(`Error creating fan device!`);
-    }
-
-    // save model name and deviceId
-    if (fs.existsSync(this.fanModelInfoFile) === false) {
-      let fanInfo = {};
-      fanInfo.model = fanModel;
-      fanInfo.deviceId = this.fanDevice.getDeviceId();
-      fs.writeFile(this.fanModelInfoFile, JSON.stringify(fanInfo), (err) => {
-        if (err) {
-          this.logDebug('Error occured could not write fan model info %s', err);
-        } else {
-          this.logDebug('Fan model info successfully saved!');
-        }
-      });
-    } else {
-      this.logDebug('Fan model info file already exists, not saving!');
     }
 
   }
 
 
   /*----------========== SETUP SERVICES ==========----------*/
-  preapreFanServices() {
-    // info service
 
-    // currently i save the fan model info in a file and load if it exists
-    let fanInfo = {};
-    fanInfo.model = this.name;
-    fanInfo.deviceId = this.ip;
-    try {
-      fanInfo = JSON.parse(fs.readFileSync(this.fanModelInfoFile));
-    } catch (err) {
-      this.log.debug('Xiaomi Fan - fan model info file does not exist');
-    }
+  initFanAccessory() {
+    // generate uuid
+    this.UUID = Homebridge.hap.uuid.generate(this.token + this.ip);
+
+    // prepare the fan accessory
+    this.fanAccesory = new Accessory(this.name, this.UUID, Homebridge.hap.Accessory.Categories.FAN);
+
+    // prepare accessory services
+    this.setupAccessoryServices();
+
+    this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [this.fanAccesory]);
+  }
+
+  setupAccessoryServices() {
+    // update the services
+    this.updateInformationService();
+
+    // prepare the fan service
+    this.prepareFanService();
+
+    // additional services
+    this.prepareMoveControl();
+    this.prepareBuzzerControlService();
+    this.prepareLedControlService();
+    this.prepareNaturalModeButtonService();
+    this.prepareShutdownTimerService();
+    this.prepareAngleButtonsService();
+  }
+
+  updateInformationService() {
+    // remove the preconstructed information service, since i will be adding my own
+    this.fanAccesory.removeService(this.fanAccesory.getService(Service.AccessoryInformation));
+
+    let fanModel = this.fanDevice ? this.fanDevice.getFanModel() : 'Unknown';
+    let fanDeviceId = this.fanDevice ? this.fanDevice.getDeviceId() : 'Unknown';
 
     this.informationService = new Service.AccessoryInformation();
     this.informationService
       .setCharacteristic(Characteristic.Name, this.name)
       .setCharacteristic(Characteristic.Manufacturer, 'Xiaomi')
-      .setCharacteristic(Characteristic.Model, fanInfo.model)
-      .setCharacteristic(Characteristic.SerialNumber, fanInfo.deviceId)
+      .setCharacteristic(Characteristic.Model, fanModel)
+      .setCharacteristic(Characteristic.SerialNumber, fanDeviceId)
       .setCharacteristic(Characteristic.FirmwareRevision, PLUGIN_VERSION);
 
+    this.fanAccesory.addService(this.informationService);
+  }
 
-    this.enabledServices.push(this.informationService);
-
-    // fan service
+  prepareFanService() {
     this.fanService = new Service.Fanv2(this.name, 'fanService');
     this.fanService
       .getCharacteristic(Characteristic.Active)
@@ -194,10 +210,10 @@ class xiaomiFanDevice {
       .on('get', this.getRotationDirection.bind(this))
       .on('set', this.setRotationDirection.bind(this));
 
-    this.enabledServices.push(this.fanService);
+    this.fanAccesory.addService(this.fanService);
+  }
 
-
-    // add move left/right buttons
+  prepareMoveControl() {
     if (this.moveControl) {
       this.moveLeftService = new Service.Switch(this.name + ' Move left', 'moveLeftService');
       this.moveLeftService
@@ -207,7 +223,7 @@ class xiaomiFanDevice {
           this.setMoveFanSwitch(state, callback, 'left');
         });
 
-      this.enabledServices.push(this.moveLeftService);
+      this.fanAccesory.addService(this.moveLeftService);
 
       this.moveRightService = new Service.Switch(this.name + ' Move right', 'moveRightService');
       this.moveRightService
@@ -217,11 +233,11 @@ class xiaomiFanDevice {
           this.setMoveFanSwitch(state, callback, 'right');
         });
 
-      this.enabledServices.push(this.moveRightService);
+      this.fanAccesory.addService(this.moveRightService);
     }
+  }
 
-
-    // add buzzer button
+  prepareBuzzerControlService() {
     if (this.buzzerControl) {
       this.buzzerService = new Service.Switch(this.name + ' Buzzer', 'buzzerService');
       this.buzzerService
@@ -229,11 +245,11 @@ class xiaomiFanDevice {
         .on('get', this.getBuzzer.bind(this))
         .on('set', this.setBuzzer.bind(this));
 
-      this.enabledServices.push(this.buzzerService);
+      this.fanAccesory.addService(this.buzzerService);
     }
+  }
 
-
-    // add led button
+  prepareLedControlService() {
     if (this.ledControl) {
       this.ledService = new Service.Switch(this.name + ' LED', 'ledService');
       this.ledService
@@ -241,10 +257,11 @@ class xiaomiFanDevice {
         .on('get', this.getLed.bind(this))
         .on('set', this.setLed.bind(this));
 
-      this.enabledServices.push(this.ledService);
+      this.fanAccesory.addService(this.ledService);
     }
+  }
 
-    // add natural mode button
+  prepareNaturalModeButtonService() {
     if (this.naturalModeButton) {
       this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'naturalModeButtonService');
       this.naturalModeButtonService
@@ -256,10 +273,11 @@ class xiaomiFanDevice {
           this.setNaturalMode(state, callback);
         });
 
-      this.enabledServices.push(this.naturalModeButtonService);
+      this.fanAccesory.addService(this.naturalModeButtonService);
     }
+  }
 
-    // add shutdown timer slider
+  prepareShutdownTimerService() {
     if (this.shutdownTimer) {
       this.shutdownTimerService = new Service.Lightbulb(this.name + ' Shutdown timer', 'shutdownTimerService');
       this.shutdownTimerService
@@ -271,12 +289,8 @@ class xiaomiFanDevice {
         .on('get', this.getShutdownTimer.bind(this))
         .on('set', this.setShutdownTimer.bind(this));
 
-      this.enabledServices.push(this.shutdownTimerService);
+      this.fanAccesory.addService(this.shutdownTimerService);
     }
-
-    //add angle angleButtons
-    this.prepareAngleButtonsService();
-
   }
 
   prepareAngleButtonsService() {
@@ -303,7 +317,7 @@ class xiaomiFanDevice {
           this.setAngleButtonState(state, callback, parsedValue);
         });
 
-      this.enabledServices.push(tmpAngleButton);
+      this.fanAccesory.addService(tmpAngleButton);
       this.angleButtonsService.push(tmpAngleButton);
     });
   }
@@ -602,66 +616,58 @@ class xiaomiFanDevice {
   /*----------========== LOG ==========----------*/
 
   logInfo(message, ...args) {
-    this.log.info(`[${this.name}] ` + message, ...args);
+    this.log.info((this.name ? `[${this.name}] ` : "") + message, ...args);
   }
 
   logWarn(message, ...args) {
-    this.log.warn(`[${this.name}] ` + message, ...args);
+    this.log.warn((this.name ? `[${this.name}] ` : "") + message, ...args);
   }
 
   logDebug(message, ...args) {
-    this.log.debug(`[${this.name}] ` + message, ...args);
+    this.log.debug((this.name ? `[${this.name}] ` : "") + message, ...args);
   }
 
   logError(message, ...args) {
-    this.log.error(`[${this.name}] [ERROR] ` + message, ...args);
+    this.log.error((this.name ? `[${this.name}] ` : "") + message, ...args);
   }
 
 }
 
 
-
-// --== ACCESSORY STUFF  ==--
-class xiaomiFanAccessory extends xiaomiFanDevice {
+/*----------========== PLATFORM STUFF ==========----------*/
+class xiaomiFanPlatform {
   constructor(log, config, api) {
-    super(log, config, api);
 
-    // check if we have mandatory device info
-    try {
-      if (!config.ip) throw new Error(`'ip' is required but not defined for ${config.name}!`);
-      if (!config.token) throw new Error(`'token' is required but not defined for ${config.name}!`);
-    } catch (error) {
-      this.logError(error);
-      this.logError(`Failed to create accessory, missing mandatory information!`);
-      this.logError(`Please check your config!`);
-      return;
-    }
-
-    this.log.warn(`[${this.name}] WARNING - your fan is set up as an accessory, and this is not the preferred way anymore. Plase set up your fan in the config.json as a platform device. See the README on how to do that. Setting up the fan as an accessory will be removed in future release!`);
-  }
-
-  getServices() {
-    return this.enabledServices;
-  }
-}
-
-
-// --== PLATFORM STUFF  ==--
-class webosTvPlatform {
-  constructor(log, config, api) {
-    if (!config) {
-      return;
-    }
-
+    this.fans = [];
     this.log = log;
     this.api = api;
     this.config = config;
 
     if (this.api) {
-      this.api.on('didFinishLaunching', this.initDevices.bind(this));
+      /*
+       * When this event is fired, homebridge restored all cached accessories from disk and did call their respective
+       * `configureAccessory` method for all of them. Dynamic Platform plugins should only register new accessories
+       * after this event was fired, in order to ensure they weren't added to homebridge already.
+       * This event can also be used to start discovery of new accessories.
+       */
+      this.api.on("didFinishLaunching", () => {
+        this.removeAccessories(); // remove all cached devices, we do not want to use cache for now, maybe in future?
+        this.initDevices();
+      });
     }
 
   }
+
+  /*
+   * This function is invoked when homebridge restores cached accessories from disk at startup.
+   * It should be used to setup event handlers for characteristics and update respective values.
+   */
+  configureAccessory(accessory) {
+    this.log.debug("Found cached accessory %s", accessory.displayName);
+    this.fans.push(accessory);
+  }
+
+  // --------------------------- CUSTOM METHODS ---------------------------
 
   initDevices() {
     this.log.info('Init - initializing devices');
@@ -670,7 +676,7 @@ class webosTvPlatform {
     if (this.config.devices && Array.isArray(this.config.devices)) {
       for (let device of this.config.devices) {
         if (device) {
-          new xiaomiFanPlatformDevice(this.log, device, this.api);
+          new xiaomiFanDevice(this.log, device, this.api);
         }
       }
     } else if (this.config.devices) {
@@ -681,7 +687,7 @@ class webosTvPlatform {
     if (this.config.fans && Array.isArray(this.config.fans)) {
       for (let fan of this.config.fans) {
         if (fan) {
-          new xiaomiFanPlatformDevice(this.log, fan, this.api);
+          new xiaomiFanDevice(this.log, fan, this.api);
         }
       }
     } else if (this.config.fans) {
@@ -694,49 +700,20 @@ class webosTvPlatform {
       this.log.info('Missing devices or fans in your platform config');
       this.log.info('-------------------------------------------');
     }
+
   }
 
-  configureAccessory(platformAccessory) {
-    // Won't be invoked
+  removeAccessories() {
+    // we don't have any special identifiers, we just remove all our accessories
+    this.log.debug("Removing all cached accessories");
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, this.fans);
+    this.fans = []; // clear out the array
   }
 
-  removeAccessory(platformAccessory) {
-    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [platformAccessory]);
+  removeAccessory(accessory) {
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    this.fans = this.fans.filter(item => item !== accessory);
   }
-}
 
 
-class xiaomiFanPlatformDevice extends xiaomiFanDevice {
-  constructor(log, config, api) {
-    super(log, config, api);
-
-    // check if we have mandatory device info
-    try {
-      if (!config.ip) throw new Error(`'ip' is required but not defined for ${config.name}!`);
-      if (!config.token) throw new Error(`'token' is required but not defined for ${config.name}!`);
-    } catch (error) {
-      this.logError(error);
-      this.logError(`Failed to create platform device, missing mandatory information!`);
-      this.logError(`Please check your device config!`);
-      return;
-    }
-
-    this.log.info(`Init - initializing device with name: ${this.name}`);
-
-    // generate uuid
-    this.UUID = Homebridge.hap.uuid.generate(config.token + config.ip);
-
-    // prepare the fan accessory
-    this.fanAccesory = new Accessory(this.name, this.UUID, Homebridge.hap.Accessory.Categories.FAN);
-
-    // remove the preconstructed information service, since i will be adding my own
-    this.fanAccesory.removeService(this.fanAccesory.getService(Service.AccessoryInformation));
-
-    // add all the services to the accessory
-    for (let service of this.enabledServices) {
-      this.fanAccesory.addService(service);
-    }
-
-    this.api.publishExternalAccessories(PLUGIN_NAME, [this.fanAccesory]);
-  }
 }
