@@ -175,6 +175,7 @@ class MiioSmartmiFan extends MiioFan {
 
   async setRotationSpeed(speed) {
     let setMethod = this.isNaturalModeEnabled() ? 'set_natural_level' : 'set_speed_level';
+    this.updateFanModeInstantly(this.isNaturalModeEnabled(), speed); // update the fan mode instantly, do not wait for miio refresh, this improves scenes
     return this.sendCommand(setMethod, speed, ['speed_level', 'natural_level']);
   }
 
@@ -196,6 +197,7 @@ class MiioSmartmiFan extends MiioFan {
 
   async setNaturalModeEnabled(enabled) {
     let setMethod = enabled ? 'set_natural_level' : 'set_speed_level';
+    this.updateFanModeInstantly(enabled, this.getRotationSpeed()); // update the fan mode instantly, do not wait for miio refresh, this improves scenes
     return this.sendCommand(setMethod, this.getRotationSpeed(), ['speed_level', 'natural_level']);
   }
 
@@ -232,6 +234,16 @@ class MiioSmartmiFan extends MiioFan {
   async setShutdownTimer(minutes) {
     let seconds = minutes * 60;
     return this.sendCommand('set_poweroff_time', seconds, ['poweroff_time']);
+  }
+
+  /*----------========== FAN SPECIFIC HELPERS ==========----------*/
+
+  updateFanModeInstantly(naturalModeEnabled, speed){
+    // when in a scene set speed and natural mode button are used at the same time, then the commands are send to fast and wrong values are set for the nautal mode
+    // this is because the sendCommand has a refresh delay before the new properties are fetched
+    // to work around that delay i set the speed_level and natural_level values manually to make sure they are up to date
+    this.miioFanDevice.setProperty('natural_level', naturalModeEnabled ? speed : 0);
+    this.miioFanDevice.setProperty('speed_level', naturalModeEnabled ? 0 : speed);
   }
 
 
