@@ -46,12 +46,6 @@
             "default": 5,
             "required": false
           },
-          "moveControl": {
-            "title": "Show move left/right control. Not supported by dmaker fans.",
-            "type": "boolean",
-            "default": true,
-            "required": false
-          },
           "buzzerControl": {
             "title": "Show buzzer control",
             "type": "boolean",
@@ -68,6 +62,12 @@
             "title": "Show a switch which allows to quickly enable/disable the natural mode.",
             "type": "boolean",
             "default": true,
+            "required": false
+          },
+          "moveControl": {
+            "title": "Show move left/right control. Not supported by the dmaker.fan.1c!",
+            "type": "boolean",
+            "default": false,
             "required": false
           },
           "shutdownTimer": {

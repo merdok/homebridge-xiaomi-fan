@@ -109,14 +109,14 @@ The device token of your Fan.
 The directory where the fan device info will be stored. **Default: "~/.homebridge/.xiaomiFan"**
 - `pollingInterval` [optional]
 The fan state background polling interval in seconds. **Default: 5**
-- `moveControl` [optional]
-Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Not supported by the dmaker.fan.1c! **Default: true**
 - `buzzerControl` [optional]
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. On Smartmi fans the rotation direction switch can be used to select between loud or quiet buzzer level. **Default: true**
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
 - `naturalModeButton` [optional]
 Show a switch which allows to quickly enable/disable the natural mode. **Default: true**
+- `moveControl` [optional]
+Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Not supported by the dmaker.fan.1c! **Default: false**
 - `shutdownTimer` [optional]
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]

@@ -41,10 +41,6 @@ class xiaomiFanDevice {
     this.pollingInterval = config['pollingInterval'] || 5;
     this.pollingInterval = this.pollingInterval * 1000;
     this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
-    this.moveControl = config['moveControl'];
-    if (this.moveControl == undefined) {
-      this.moveControl = true;
-    }
     this.buzzerControl = config['buzzerControl'];
     if (this.buzzerControl == undefined) {
       this.buzzerControl = true;
@@ -56,6 +52,10 @@ class xiaomiFanDevice {
     this.naturalModeButton = config['naturalModeButton'];
     if (this.naturalModeButton == undefined) {
       this.naturalModeButton = true;
+    }
+    this.moveControl = config['moveControl'];
+    if (this.moveControl == undefined) {
+      this.moveControl = false;
     }
     this.shutdownTimer = config['shutdownTimer'];
     if (this.shutdownTimer == undefined) {
