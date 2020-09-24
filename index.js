@@ -356,7 +356,7 @@ class xiaomiFanDevice {
   }
 
   setPowerState(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       let isPowerOn = state === Characteristic.Active.ACTIVE;
       this.fanDevice.setPowerOn(isPowerOn);
       callback();
@@ -382,7 +382,7 @@ class xiaomiFanDevice {
   }
 
   setRotationSpeed(value, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       this.fanDevice.setRotationSpeed(value);
       callback();
     } else {
@@ -399,7 +399,7 @@ class xiaomiFanDevice {
   }
 
   setLockPhysicalControls(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       let isChildLockActive = state === Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED;
       this.fanDevice.setChildLock(isChildLockActive);
       callback();
@@ -417,7 +417,7 @@ class xiaomiFanDevice {
   }
 
   setSwingMode(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       let isSwingModeActive = state === Characteristic.SwingMode.SWING_ENABLED;
       this.fanDevice.setSwingModeEnabled(isSwingModeActive);
       this.updateAngleButtonsAndSwingMode(null, isSwingModeActive); // update the angel buttons if enabled
@@ -436,7 +436,7 @@ class xiaomiFanDevice {
   }
 
   setRotationDirection(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (this.fanDevice.isBuzzerEnabled() === true) {
         let buzzerLevel = state === Characteristic.RotationDirection.CLOCKWISE ? 1 : 2;
         this.fanDevice.setBuzzerLevel(buzzerLevel);
@@ -452,7 +452,7 @@ class xiaomiFanDevice {
   }
 
   setMoveFanSwitch(state, callback, direction) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (direction === 'left') {
         this.fanDevice.moveLeft();
       } else {
@@ -477,7 +477,7 @@ class xiaomiFanDevice {
   }
 
   setBuzzer(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       this.fanDevice.setBuzzerEnabled(state);
       callback();
     } else {
@@ -494,7 +494,7 @@ class xiaomiFanDevice {
   }
 
   setLed(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       this.fanDevice.setLedEnabled(state);
       callback();
     } else {
@@ -511,7 +511,7 @@ class xiaomiFanDevice {
   }
 
   setNaturalMode(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       this.fanDevice.setNaturalModeEnabled(state);
       callback();
     } else {
@@ -528,7 +528,7 @@ class xiaomiFanDevice {
   }
 
   setShutdownTimerEnabled(state, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (state === false) { // only if disabling, enabling will automatically set it to 100%
         this.fanDevice.setShutdownTimer(0);
       }
@@ -547,7 +547,7 @@ class xiaomiFanDevice {
   }
 
   setShutdownTimer(level, callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       this.fanDevice.setShutdownTimer(level);
       callback();
     } else {
@@ -566,7 +566,7 @@ class xiaomiFanDevice {
   }
 
   setAngleButtonState(state, callback, angle) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (state) {
         // if swing mode disabled then turn it on
         if (this.fanDevice.isSwingModeEnabled() === false) {
