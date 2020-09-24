@@ -172,6 +172,14 @@ class MiotSmartmiDcFan extends MiotFan {
     return this.getShutdownTimer() > 0;
   }
 
+  getTemperature(){
+    return this.properties.temperature;
+  }
+
+  getRelativeHumidity(){
+    return this.properties.relative_humidity;
+  }
+
 
   /*----------========== COMMANDS ==========----------*/
 

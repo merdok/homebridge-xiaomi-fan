@@ -323,6 +323,14 @@ class BaseFan extends EventEmitter {
     return 0;
   }
 
+  getTemperature(){
+    return 0;
+  }
+
+  getRelativeHumidity(){
+    return 0;
+  }
+
 
   /*----------========== COMMANDS ==========----------*/
 

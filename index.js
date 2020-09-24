@@ -162,6 +162,10 @@ class xiaomiFanDevice {
     this.prepareNaturalModeButtonService();
     this.prepareShutdownTimerService();
     this.prepareAngleButtonsService();
+
+    // device specific services
+    this.prepareTemperatureService();
+    this.prepareRelativeHumidityService();
   }
 
   updateInformationService() {
@@ -320,6 +324,37 @@ class xiaomiFanDevice {
     });
   }
 
+  prepareTemperatureService() {
+    if (this.fanDevice && this.fanDevice.supportsTemperature()) {
+      this.temperatureService = new Service.TemperatureSensor(this.name + ' Temp', 'temperatureService');
+      this.temperatureService
+        .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
+        .setCharacteristic(Characteristic.StatusTampered, Characteristic.StatusTampered.NOT_TAMPERED)
+        .setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
+      this.temperatureService
+        .getCharacteristic(Characteristic.CurrentTemperature)
+        .on('get', this.getCurrentTemperature.bind(this));
+
+      this.fanAccesory.addService(this.temperatureService);
+    }
+  }
+
+  prepareRelativeHumidityService() {
+    if (this.fanDevice && this.fanDevice.supportsRelativeHumidity()) {
+      this.relativeHumidityService = new Service.HumiditySensor(this.name + ' Humidity', 'relativeHumidityService');
+      this.relativeHumidityService
+        .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
+        .setCharacteristic(Characteristic.StatusTampered, Characteristic.StatusTampered.NOT_TAMPERED)
+        .setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
+      this.relativeHumidityService
+        .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+        .on('get', this.getCurrentRelativeHumidity.bind(this));
+
+      this.fanAccesory.addService(this.relativeHumidityService);
+    }
+  }
+
+
   /*----------========== UPDATE SERVICES BASED ON DEVICE ==========----------*/
 
   updateServicesForDevice() {
@@ -342,6 +377,9 @@ class xiaomiFanDevice {
       this.angleButtonsService = null;
     }
 
+    // temperature and relative humidity services
+    this.prepareTemperatureService();
+    this.prepareRelativeHumidityService();
   }
 
 
@@ -583,6 +621,22 @@ class xiaomiFanDevice {
     }
   }
 
+  getCurrentTemperature(callback) {
+    let temp = 0;
+    if (this.fanDevice) {
+      temp = this.fanDevice.getTemperature();
+    }
+    callback(null, temp);
+  }
+
+  getCurrentRelativeHumidity(callback) {
+    let relHumidity = 0;
+    if (this.fanDevice) {
+      relHumidity = this.fanDevice.getRelativeHumidity();
+    }
+    callback(null, relHumidity);
+  }
+
 
   /*----------========== HELPERS ==========----------*/
 
@@ -598,6 +652,18 @@ class xiaomiFanDevice {
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
       this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
+
+      // device specific
+      if (this.temperatureService) this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.fanDevice.getTemperature());
+      if (this.relativeHumidityService) this.relativeHumidityService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(this.fanDevice.getRelativeHumidity());
+    }
+  }
+
+  prepareRelativeHumidityService() {
+    if (this.fanDevice && this.fanDevice.supportsRelativeHumidity()) {
+      this.relativeHumidityService = new Service.HumiditySensor(this.name + ' Humidity', 'relativeHumidityService');
+      this.relativeHumidityService
+        .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
     }
   }
 
