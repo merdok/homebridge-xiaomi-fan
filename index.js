@@ -387,7 +387,7 @@ class xiaomiFanDevice {
 
   getPowerState(callback) {
     let isFanOn = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       isFanOn = this.fanDevice.isPowerOn();
     }
     callback(null, isFanOn ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
@@ -405,7 +405,7 @@ class xiaomiFanDevice {
 
   getFanState(callback) {
     let fanState = Characteristic.CurrentFanState.INACTIVE;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       fanState = this.fanDevice.isPowerOn() ? Characteristic.CurrentFanState.BLOWING_AIR : Characteristic.CurrentFanState.IDLE
     }
     callback(null, fanState);
@@ -413,7 +413,7 @@ class xiaomiFanDevice {
 
   getRotationSpeed(callback) {
     let fanRotationSpeed = 0;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       fanRotationSpeed = this.fanDevice.getRotationSpeed();
     }
     callback(null, fanRotationSpeed);
@@ -430,7 +430,7 @@ class xiaomiFanDevice {
 
   getLockPhysicalControls(callback) {
     let isChildLockActive = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       isChildLockActive = this.fanDevice.isChildLockActive();
     }
     callback(null, isChildLockActive ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
@@ -448,7 +448,7 @@ class xiaomiFanDevice {
 
   getSwingMode(callback) {
     let isSwingModeActive = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       isSwingModeActive = this.fanDevice.isSwingModeEnabled();
     }
     callback(null, isSwingModeActive ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
@@ -467,7 +467,7 @@ class xiaomiFanDevice {
 
   getRotationDirection(callback) {
     let buzzerLevel = 2;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       buzzerLevel = this.fanDevice.getBuzzerLevel();
     }
     callback(null, buzzerLevel === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
@@ -508,7 +508,7 @@ class xiaomiFanDevice {
 
   getBuzzer(callback) {
     let isBuzzerEnabled = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       isBuzzerEnabled = this.fanDevice.isBuzzerEnabled();
     }
     callback(null, isBuzzerEnabled);
@@ -525,7 +525,7 @@ class xiaomiFanDevice {
 
   getLed(callback) {
     let isLedEnabled = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       isLedEnabled = this.fanDevice.isLedEnabled();
     }
     callback(null, isLedEnabled);
@@ -541,7 +541,7 @@ class xiaomiFanDevice {
   }
 
   getNaturalMode(callback) {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       callback(null, this.fanDevice.isNaturalModeEnabled());
       return;
     }
@@ -559,7 +559,7 @@ class xiaomiFanDevice {
 
   getShutdownTimerEnabled(callback) {
     let isShutdownTimerEnabled = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       isShutdownTimerEnabled = this.fanDevice.isShutdownTimerEnabled();
     }
     callback(null, isShutdownTimerEnabled);
@@ -578,7 +578,7 @@ class xiaomiFanDevice {
 
   getShutdownTimer(callback) {
     let shutdownTimerTime = 0;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       shutdownTimerTime = this.fanDevice.getShutdownTimer();
     }
     callback(null, shutdownTimerTime);
@@ -595,7 +595,7 @@ class xiaomiFanDevice {
 
   getAngleButtonState(callback, angle) {
     let angleButtonEnabled = false;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (this.fanDevice.isSwingModeEnabled() === true) {
         angleButtonEnabled = this.fanDevice.getAngle() === angle;
       }
@@ -623,7 +623,7 @@ class xiaomiFanDevice {
 
   getCurrentTemperature(callback) {
     let temp = 0;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       temp = this.fanDevice.getTemperature();
     }
     callback(null, temp);
@@ -631,7 +631,7 @@ class xiaomiFanDevice {
 
   getCurrentRelativeHumidity(callback) {
     let relHumidity = 0;
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       relHumidity = this.fanDevice.getRelativeHumidity();
     }
     callback(null, relHumidity);
