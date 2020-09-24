@@ -9,6 +9,10 @@ const PLUGIN_NAME = 'homebridge-xiaomi-fan';
 const PLATFORM_NAME = 'xiaomifan';
 const PLUGIN_VERSION = '1.3.1';
 
+// General constants
+const BATTERY_LOW_THRESHOLD = 20;
+const BUTTON_RESET_TIMEOUT = 20; // in milliseconds
+
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
@@ -62,6 +66,10 @@ class xiaomiFanDevice {
       this.shutdownTimer = false;
     }
     this.angleButtons = config['angleButtons'];
+    this.ioniserButton = config['ioniserButton'];
+    if (this.ioniserButton == undefined) {
+      this.ioniserButton = false;
+    }
 
 
     this.logInfo(`Init - got Fan configuration, initializing device with name: ${this.name}`);
@@ -164,8 +172,10 @@ class xiaomiFanDevice {
     this.prepareAngleButtonsService();
 
     // device specific services
+    this.prepareIoniserButtonService();
     this.prepareTemperatureService();
     this.prepareRelativeHumidityService();
+    this.prepareBatteryService();
   }
 
   updateInformationService() {
@@ -324,6 +334,22 @@ class xiaomiFanDevice {
     });
   }
 
+  prepareIoniserButtonService() {
+    if (this.ioniserButton && this.fanDevice && this.fanDevice.supportsIoniser()) {
+      this.ioniserButtonService = new Service.Switch(this.name + ' Ioniser', 'ioniserButtonService');
+      this.ioniserButtonService
+        .getCharacteristic(Characteristic.On)
+        .on('get', (callback) => {
+          this.getIoniserState(callback);
+        })
+        .on('set', (state, callback) => {
+          this.setIoniserState(state, callback);
+        });
+
+      this.fanAccesory.addService(this.ioniserButtonService);
+    }
+  }
+
   prepareTemperatureService() {
     if (this.fanDevice && this.fanDevice.supportsTemperature()) {
       this.temperatureService = new Service.TemperatureSensor(this.name + ' Temp', 'temperatureService');
@@ -354,6 +380,23 @@ class xiaomiFanDevice {
     }
   }
 
+  prepareBatteryService() {
+    if (this.fanDevice && this.fanDevice.hasBuiltInBattery() && this.fanDevice.supportsBatteryStateReporting()) {
+      this.batteryService = new Service.BatteryService(this.name + ' Battery', 'batteryService');
+      this.batteryService
+        .setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING)
+        .setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
+      this.batteryService
+        .getCharacteristic(Characteristic.BatteryLevel)
+        .on('get', this.getBatteryLevel.bind(this));
+      this.batteryService
+        .getCharacteristic(Characteristic.StatusLowBattery)
+        .on('get', this.getBatteryLevelStatus.bind(this));
+
+      this.fanAccesory.addService(this.batteryService);
+    }
+  }
+
 
   /*----------========== UPDATE SERVICES BASED ON DEVICE ==========----------*/
 
@@ -378,8 +421,10 @@ class xiaomiFanDevice {
     }
 
     // temperature and relative humidity services
+    this.prepareIoniserButtonService();
     this.prepareTemperatureService();
     this.prepareRelativeHumidityService();
+    this.prepareBatteryService();
   }
 
 
@@ -499,7 +544,7 @@ class xiaomiFanDevice {
       setTimeout(() => {
         if (this.moveLeftService) this.moveLeftService.getCharacteristic(Characteristic.On).updateValue(false);
         if (this.moveRightService) this.moveRightService.getCharacteristic(Characteristic.On).updateValue(false);
-      }, 20);
+      }, BUTTON_RESET_TIMEOUT);
       callback();
     } else {
       callback(this.createError(`cannot move fan`));
@@ -553,7 +598,7 @@ class xiaomiFanDevice {
       this.fanDevice.setNaturalModeEnabled(state);
       callback();
     } else {
-      callback(this.createError(`cannot set mode state`));
+      callback(this.createError(`cannot set natural mode state`));
     }
   }
 
@@ -621,6 +666,25 @@ class xiaomiFanDevice {
     }
   }
 
+  /*---=== device specific services ===---*/
+
+  getIoniserState(callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      callback(null, this.fanDevice.isIoniserEnabled());
+      return;
+    }
+    callback(null, false);
+  }
+
+  setIoniserState(state, callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      this.fanDevice.setIoniserEnabled(state);
+      callback();
+    } else {
+      callback(this.createError(`cannot set ioniser state`));
+    }
+  }
+
   getCurrentTemperature(callback) {
     let temp = 0;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
@@ -635,6 +699,22 @@ class xiaomiFanDevice {
       relHumidity = this.fanDevice.getRelativeHumidity();
     }
     callback(null, relHumidity);
+  }
+
+  getBatteryLevel(callback) {
+    let batteryLevel = 0;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      batteryLevel = this.fanDevice.getBatteryLevel();
+    }
+    callback(null, batteryLevel);
+  }
+
+  getBatteryLevelStatus(callback) {
+    let batteryLevelStatus = 	Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      batteryLevelStatus = this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    }
+    callback(null, batteryLevelStatus);
   }
 
 
@@ -654,8 +734,11 @@ class xiaomiFanDevice {
       this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
 
       // device specific
+      if (this.ioniserButtonService) this.ioniserButtonService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isIoniserEnabled());
       if (this.temperatureService) this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.fanDevice.getTemperature());
       if (this.relativeHumidityService) this.relativeHumidityService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(this.fanDevice.getRelativeHumidity());
+      if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.fanDevice.getBatteryLevel());
+      if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.StatusLowBattery).updateValue(this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
     }
   }
 

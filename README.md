@@ -104,6 +104,8 @@ Name of your accessory.
 ip address of your Fan.
 - `token` [required]
 The device token of your Fan.
+- `deviceId` [optional]
+New fan devices which use the miot protocol require the device id to be specified. The deviceId will be automatically retrieved by the plugin but if there is trouble you can manually specify it. **Default: "" (not specified)**
 - `prefsDir` [optional]
 The directory where the fan device info will be stored. **Default: "~/.homebridge/.xiaomiFan"**
 - `pollingInterval` [optional]
@@ -120,8 +122,8 @@ Whether the move service is enabled. This allows to move the fan in 5° to the l
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
 Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. Not supported by the dmaker.fan.1c! **Default: "" (disabled)**
-- `deviceId` [optional]
-New fan devices which use the miot protocol require the device id to be specified. The deviceId will be automatically retrieved by the plugin but if there is trouble you can manually specify it. **Default: "" (not specified)**
+- `ioniserButton` [optional]
+Show a switch which allows to quickly enable/disable the ioniser on your fan. Works only on supported devices. **Default: false**
 
 ## Troubleshooting
 If you have any issues with the plugin or fan services then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues.

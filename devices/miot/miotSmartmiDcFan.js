@@ -101,7 +101,7 @@ class MiotSmartmiDcFan extends MiotFan {
     return true;
   }
 
-  supportsIonisator() {
+  supportsIoniser() {
     return true;
   }
 
@@ -172,12 +172,20 @@ class MiotSmartmiDcFan extends MiotFan {
     return this.getShutdownTimer() > 0;
   }
 
+  isIoniserEnabled() {
+    return this.properties.anion === true;
+  }
+
   getTemperature(){
     return this.properties.temperature;
   }
 
   getRelativeHumidity(){
     return this.properties.relative_humidity;
+  }
+
+  getBatteryLevel(){
+    return this.properties.battery;
   }
 
 
@@ -235,6 +243,10 @@ class MiotSmartmiDcFan extends MiotFan {
   async setShutdownTimer(minutes) {
     let seconds = minutes * 60;
     return this.setProperty('power_off_time', seconds);
+  }
+
+  async setIoniserEnabled(enabled) {
+    return this.setProperty('anion', enabled);
   }
 
 

@@ -252,8 +252,8 @@ class BaseFan extends EventEmitter {
     return false; // whether the fan returns use time
   }
 
-  supportsIonisator() {
-    return false; // whether the fan has a built in ionizer which can be controled
+  supportsIoniser() {
+    return false; // whether the fan has a built in ioniser which can be controled
   }
 
   supportsTemperature() {
@@ -323,11 +323,19 @@ class BaseFan extends EventEmitter {
     return 0;
   }
 
+  isIoniserEnabled() {
+    return false;
+  }
+
   getTemperature(){
     return 0;
   }
 
   getRelativeHumidity(){
+    return 0;
+  }
+
+  getBatteryLevel(){
     return 0;
   }
 
@@ -385,6 +393,10 @@ class BaseFan extends EventEmitter {
   }
 
   async setShutdownTimer(minutes) {
+    this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
+  }
+
+  async setIoniserEnabled(enabled) {
     this.logWarn(COMMAND_NOT_SUPPORTED_MSG);
   }
 
