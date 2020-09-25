@@ -85,8 +85,15 @@ class xiaomiFanDevice {
       mkdirp(this.prefsDir);
     }
 
+    // create fan model info file name
+    this.fanInfoFile = this.prefsDir + 'info_' + this.ip.split('.').join('') + '_' + this.token;
+
     // prepare variables
     this.fanDevice = undefined;
+    this.cachedFanInfo = {};
+
+    //try to load cached fan info
+    this.loadFanInfo();
 
     //prepare the services
     this.initFanAccessory();
@@ -116,28 +123,26 @@ class xiaomiFanDevice {
   }
 
   setupDevice(miioDevice) {
-    let fanModel = miioDevice.miioModel;
-
     // create the fan device
     this.fanDevice = FanDeviceFactory.createFanDevice(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log, this);
 
     if (this.fanDevice) {
-
       // do devices specific fan service updates
       this.updateServicesForDevice();
+
+      // update the information service
+      this.updateInformationService();
 
       // register for the fan update properties event
       this.fanDevice.on('fanPropertiesUpdated', (res) => {
         this.updateFanStatus();
       });
 
-      //  remove the information service here and add the new one after setup is complete, this way i do not have to save anything?
-      this.updateInformationService();
-
+      // save fan information
+      this.saveFanInfo();
     } else {
       this.logError(`Error creating fan device!`);
     }
-
   }
 
 
@@ -182,8 +187,10 @@ class xiaomiFanDevice {
     // remove the preconstructed information service, since i will be adding my own
     this.fanAccesory.removeService(this.fanAccesory.getService(Service.AccessoryInformation));
 
-    let fanModel = this.fanDevice ? this.fanDevice.getFanModel() : 'Unknown';
-    let fanDeviceId = this.fanDevice ? this.fanDevice.getDeviceId() : 'Unknown';
+    let fanModel = this.fanDevice ? this.fanDevice.getFanModel() : null;
+    fanModel = fanModel || this.cachedFanInfo.model || 'Unknown';
+    let fanDeviceId = this.fanDevice ? this.fanDevice.getDeviceId() : null;
+    fanDeviceId = fanDeviceId || this.cachedFanInfo.deviceId || 'Unknown';
 
     this.informationService = new Service.AccessoryInformation();
     this.informationService
@@ -710,7 +717,7 @@ class xiaomiFanDevice {
   }
 
   getBatteryLevelStatus(callback) {
-    let batteryLevelStatus = 	Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    let batteryLevelStatus = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       batteryLevelStatus = this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
     }
@@ -742,14 +749,6 @@ class xiaomiFanDevice {
     }
   }
 
-  prepareRelativeHumidityService() {
-    if (this.fanDevice && this.fanDevice.supportsRelativeHumidity()) {
-      this.relativeHumidityService = new Service.HumiditySensor(this.name + ' Humidity', 'relativeHumidityService');
-      this.relativeHumidityService
-        .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
-    }
-  }
-
   updateAngleButtonsAndSwingMode(activeAngle, enabled) {
     if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(enabled ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
     if (this.angleButtonsService) {
@@ -775,6 +774,29 @@ class xiaomiFanDevice {
 
   createError(msg) {
     return new Error(`[${this.name}] Fan is not connected, ` + msg);
+  }
+
+  saveFanInfo() {
+    // save model name and deviceId
+    if (this.fanDevice) {
+      this.cachedFanInfo.model = this.fanDevice.getFanModel();
+      this.cachedFanInfo.deviceId = this.fanDevice.getDeviceId();
+      fs.writeFile(this.fanInfoFile, JSON.stringify(this.cachedFanInfo), (err) => {
+        if (err) {
+          this.logDebug('Error occured could not write fan model info %s', err);
+        } else {
+          this.logDebug('Successfully saved fan info!');
+        }
+      });
+    }
+  }
+
+  loadFanInfo(){
+    try {
+      this.cachedFanInfo = JSON.parse(fs.readFileSync(this.fanInfoFile));
+    } catch (err) {
+      this.logDebug('Fan info file does not exist yet, device unknown!');
+    }
   }
 
 
@@ -832,7 +854,7 @@ class xiaomiFanPlatform {
     this.fans.push(accessory);
   }
 
-  // --------------------------- CUSTOM METHODS ---------------------------
+  // ------------ CUSTOM METHODS ------------
 
   initDevices() {
     this.log.info('Init - initializing devices');
