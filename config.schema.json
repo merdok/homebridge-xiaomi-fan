@@ -14,6 +14,7 @@
         "properties": {
           "name": {
             "title": "Name",
+            "description": "The name of your fan.",
             "type": "string",
             "default": "My Xiaomi Fan",
             "minLength": 1,
@@ -21,63 +22,80 @@
           },
           "ip": {
             "title": "Fan ip address",
+            "description": "The ip address of your fan.",
             "type": "string",
             "format": "ipv4",
             "required": true
           },
           "token": {
             "title": "Fan device token",
+            "description": "The token of your fan.",
             "type": "string",
             "required": true
           },
           "deviceId": {
-            "title": "Fan device id (optional)",
+            "title": "Fan device id",
+            "description": "The device id of your fan.",
+            "type": "string",
+            "required": false
+          },
+          "model": {
+            "title": "The fan model",
+            "description": "The model of your fan. If specified then the accessory will be created instantly without the need to first discover and identify the fan.",
             "type": "string",
             "required": false
           },
           "prefsDir": {
             "title": "Prefs directory",
+            "description": "The location where to store fan information. Default is: ~/.homebridge/.xiaomiFan",
             "type": "string",
             "required": false
           },
           "pollingInterval": {
-            "title": "Background polling interval in seconds",
+            "title": "Background polling interval",
+            "description": "How often to check the status of the tv in seconds.",
             "type": "number",
             "default": 5,
             "required": false
           },
           "buzzerControl": {
-            "title": "Show buzzer control",
+            "title": "Buzzer control service",
+            "description": "Whether to show buzzer control buttons.",
             "type": "boolean",
             "default": true,
             "required": false
           },
           "ledControl": {
-            "title": "Show led control",
+            "title": "Led control service",
+            "description": "Whether to show led control buttons.",
             "type": "boolean",
             "default": true,
             "required": false
           },
-          "naturalModeButton": {
-            "title": "Show a switch which allows to quickly enable/disable the natural mode. Only on supported devices!",
+          "naturalModeControl": {
+            "title": "Natural mode control service",
+            "description": "Whether to show a switch which allows to quickly enable/disable the natural mode. Only on supported devices!",
             "type": "boolean",
             "default": true,
             "required": false
           },
-          "sleepModeButton": {
-            "title": "Show a switch which allows to quickly enable/disable the sleep mode. Only on supported devices!",
+          "sleepModeControl": {
+            "title": "Sleep mode control service",
+            "description": "Whether to show a switch which allows to quickly enable/disable the sleep mode. Only on supported devices!",
             "type": "boolean",
             "default": true,
             "required": false
           },
           "moveControl": {
-            "title": "Show move left/right control. Only on supported devices!",
+            "title": "Move control service",
+            "description": "Whether to show switches which allows to move the fan left or right. Only on supported devices!",
             "type": "boolean",
             "default": false,
             "required": false
           },
           "shutdownTimer": {
-            "title": "Show a slider (light bulb) to control the auto shutdown timer.",
+            "title": "Shutdown timer service",
+            "description": "Show a slider (light bulb) to control the auto shutdown timer.",
             "type": "boolean",
             "default": false,
             "required": false
@@ -90,8 +108,9 @@
               "type": "integer"
             }
           },
-          "ioniserButton": {
-            "title": "Show a switch which allows to quickly enable/disable the ioniser on your fan. Works only on supported devices.",
+          "ioniserControl": {
+            "title": "Ioniser control service",
+            "description": "Show a switch which allows to quickly enable/disable the ioniser on your fan. Only on supported devices!",
             "type": "boolean",
             "default": false,
             "required": false

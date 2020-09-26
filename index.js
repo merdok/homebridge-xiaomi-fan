@@ -41,6 +41,7 @@ class xiaomiFanDevice {
     this.ip = config['ip'];
     this.token = config['token'];
     this.deviceId = config['deviceId'];
+    this.model = config['model'];
     this.pollingInterval = config['pollingInterval'] || 5;
     this.pollingInterval = this.pollingInterval * 1000;
     this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
@@ -52,13 +53,13 @@ class xiaomiFanDevice {
     if (this.ledControl == undefined) {
       this.ledControl = true;
     }
-    this.naturalModeButton = config['naturalModeButton'];
-    if (this.naturalModeButton == undefined) {
-      this.naturalModeButton = true;
+    this.naturalModeControl = config['naturalModeControl'];
+    if (this.naturalModeControl == undefined) {
+      this.naturalModeControl = true;
     }
-    this.sleepModeButton = config['sleepModeButton'];
-    if (this.sleepModeButton == undefined) {
-      this.sleepModeButton = true;
+    this.sleepModeControl = config['sleepModeControl'];
+    if (this.sleepModeControl == undefined) {
+      this.sleepModeControl = true;
     }
     this.moveControl = config['moveControl'];
     if (this.moveControl == undefined) {
@@ -69,9 +70,9 @@ class xiaomiFanDevice {
       this.shutdownTimer = false;
     }
     this.angleButtons = config['angleButtons'];
-    this.ioniserButton = config['ioniserButton'];
-    if (this.ioniserButton == undefined) {
-      this.ioniserButton = false;
+    this.ioniserControl = config['ioniserControl'];
+    if (this.ioniserControl == undefined) {
+      this.ioniserControl = false;
     }
 
 
@@ -106,7 +107,8 @@ class xiaomiFanDevice {
   /*----------========== SETUP ==========----------*/
 
   discoverFan() {
-    let fanController = new FanController(this.ip, this.token, this.deviceId, this.cachedFanInfo.model, this.name, this.pollingInterval, this.log);
+    // if the user specified a model then use that, else try to get cached model
+    let fanController = new FanController(this.ip, this.token, this.deviceId, this.model || this.cachedFanInfo.model, this.name, this.pollingInterval, this.log);
 
     fanController.on('fanDeviceReady', (fanDevice) => {
       this.fanDevice = fanDevice;
@@ -117,9 +119,13 @@ class xiaomiFanDevice {
       }
     });
 
-    fanController.on('connectedToFan', (fanDevice) => {
+    fanController.on('fanConnected', (fanDevice) => {
       // save fan information
       this.saveFanInfo();
+    });
+
+    fanController.on('fanDisconnected', (fanDevice) => {
+      this.updateFanStatus();
     });
 
     fanController.on('fanPropertiesUpdated', (fanDevice) => {
@@ -158,11 +164,11 @@ class xiaomiFanDevice {
     this.prepareMoveControl();
     this.prepareBuzzerControlService();
     this.prepareLedControlService();
-    this.prepareNaturalModeButtonService();
+    this.prepareNaturalModeControlService();
     this.prepareShutdownTimerService();
     this.prepareAngleButtonsService();
-    this.prepareSleepModeButtonService();
-    this.prepareIoniserButtonService();
+    this.prepareSleepModeControlService();
+    this.prepareIoniserControlService();
     this.prepareTemperatureService();
     this.prepareRelativeHumidityService();
     this.prepareBatteryService();
@@ -263,10 +269,10 @@ class xiaomiFanDevice {
     }
   }
 
-  prepareNaturalModeButtonService() {
-    if (this.naturalModeButton && this.fanDevice.supportsNaturalMode()) {
-      this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'naturalModeButtonService');
-      this.naturalModeButtonService
+  prepareNaturalModeControlService() {
+    if (this.naturalModeControl && this.fanDevice.supportsNaturalMode()) {
+      this.naturalModeControlService = new Service.Switch(this.name + ' Natural mode', 'naturalModeControlService');
+      this.naturalModeControlService
         .getCharacteristic(Characteristic.On)
         .on('get', (callback) => {
           this.getNaturalMode(callback);
@@ -275,14 +281,14 @@ class xiaomiFanDevice {
           this.setNaturalMode(state, callback);
         });
 
-      this.fanAccesory.addService(this.naturalModeButtonService);
+      this.fanAccesory.addService(this.naturalModeControlService);
     }
   }
 
-  prepareSleepModeButtonService() {
-    if (this.sleepModeButton && this.fanDevice.supportsSleepMode()) {
-      this.sleepModeButtonService = new Service.Switch(this.name + ' Sleep mode', 'sleepModeButtonService');
-      this.sleepModeButtonService
+  prepareSleepModeControlService() {
+    if (this.sleepModeControl && this.fanDevice.supportsSleepMode()) {
+      this.sleepModeControlService = new Service.Switch(this.name + ' Sleep mode', 'sleepModeControlService');
+      this.sleepModeControlService
         .getCharacteristic(Characteristic.On)
         .on('get', (callback) => {
           this.getSleepMode(callback);
@@ -291,7 +297,7 @@ class xiaomiFanDevice {
           this.setSleepMode(state, callback);
         });
 
-      this.fanAccesory.addService(this.sleepModeButtonService);
+      this.fanAccesory.addService(this.sleepModeControlService);
     }
   }
 
@@ -340,10 +346,10 @@ class xiaomiFanDevice {
     });
   }
 
-  prepareIoniserButtonService() {
-    if (this.ioniserButton && this.fanDevice.supportsIoniser()) {
-      this.ioniserButtonService = new Service.Switch(this.name + ' Ioniser', 'ioniserButtonService');
-      this.ioniserButtonService
+  prepareIoniserControlService() {
+    if (this.ioniserControl && this.fanDevice.supportsIoniser()) {
+      this.ioniserControlService = new Service.Switch(this.name + ' Ioniser', 'ioniserControlService');
+      this.ioniserControlService
         .getCharacteristic(Characteristic.On)
         .on('get', (callback) => {
           this.getIoniserState(callback);
@@ -352,7 +358,7 @@ class xiaomiFanDevice {
           this.setIoniserState(state, callback);
         });
 
-      this.fanAccesory.addService(this.ioniserButtonService);
+      this.fanAccesory.addService(this.ioniserControlService);
     }
   }
 
@@ -721,13 +727,13 @@ class xiaomiFanDevice {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.getBuzzerLevel() === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
       if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
       if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
-      if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
+      if (this.naturalModeControlService) this.naturalModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
       this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
 
       // device specific
-      if (this.ioniserButtonService) this.ioniserButtonService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isIoniserEnabled());
+      if (this.ioniserControlService) this.ioniserControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isIoniserEnabled());
       if (this.temperatureService) this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.fanDevice.getTemperature());
       if (this.relativeHumidityService) this.relativeHumidityService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(this.fanDevice.getRelativeHumidity());
       if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.fanDevice.getBatteryLevel());

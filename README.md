@@ -74,7 +74,7 @@ Example configuration:
           "moveControl": true,
           "buzzerControl": true,
           "ledControl": true,
-          "naturalModeButton": true,
+          "naturalModeControl": true,
           "shutdownTimer": true,
           "angleButtons": [
              5,
@@ -106,6 +106,8 @@ ip address of your Fan.
 The device token of your Fan.
 - `deviceId` [optional]
 New fan devices which use the miot protocol require the device id to be specified. The deviceId will be automatically retrieved by the plugin but if there is trouble you can manually specify it. **Default: "" (not specified)**
+- `model` [optional]
+The fan model. If specified then the accessory will be created instantly without the need to first discover and identify the fan. **Default: "" (not specified)**
 - `prefsDir` [optional]
 The directory where the fan device info will be stored. **Default: "~/.homebridge/.xiaomiFan"**
 - `pollingInterval` [optional]
@@ -114,9 +116,9 @@ The fan state background polling interval in seconds. **Default: 5**
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. On Smartmi fans the rotation direction switch can be used to select between loud or quiet buzzer level. **Default: true**
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
-- `naturalModeButton` [optional]
+- `naturalModeControl` [optional]
 Show a switch which allows to quickly enable/disable the natural mode. Only on supported devices! **Default: true**
-- `sleepModeButton` [optional]
+- `sleepModeControl` [optional]
 Show a switch which allows to quickly enable/disable the sleep mode. Only on supported devices! **Default: true**
 - `moveControl` [optional]
 Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Only on supported devices! **Default: false**
@@ -124,7 +126,7 @@ Whether the move service is enabled. This allows to move the fan in 5° to the l
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
 Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. Only on supported devices! **Default: "" (disabled)**
-- `ioniserButton` [optional]
+- `ioniserControl` [optional]
 Show a switch which allows to quickly enable/disable the ioniser on your fan. Works only on supported devices. **Default: false**
 
 ## Troubleshooting
