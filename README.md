@@ -115,13 +115,15 @@ Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer
 - `ledControl` [optional]
 Whether the led service is enabled. This allows to turn on/off the fan LED. **Default: true**
 - `naturalModeButton` [optional]
-Show a switch which allows to quickly enable/disable the natural mode. **Default: true**
+Show a switch which allows to quickly enable/disable the natural mode. Only on supported devices! **Default: true**
+- `sleepModeButton` [optional]
+Show a switch which allows to quickly enable/disable the sleep mode. Only on supported devices! **Default: true**
 - `moveControl` [optional]
-Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Not supported by the dmaker.fan.1c! **Default: false**
+Whether the move service is enabled. This allows to move the fan in 5° to the left or right. Only on supported devices! **Default: false**
 - `shutdownTimer` [optional]
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
-Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. Not supported by the dmaker.fan.1c! **Default: "" (disabled)**
+Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. Only on supported devices! **Default: "" (disabled)**
 - `ioniserButton` [optional]
 Show a switch which allows to quickly enable/disable the ioniser on your fan. Works only on supported devices. **Default: false**
 

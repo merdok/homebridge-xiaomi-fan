@@ -56,6 +56,10 @@ class xiaomiFanDevice {
     if (this.naturalModeButton == undefined) {
       this.naturalModeButton = true;
     }
+    this.sleepModeButton = config['sleepModeButton'];
+    if (this.sleepModeButton == undefined) {
+      this.sleepModeButton = true;
+    }
     this.moveControl = config['moveControl'];
     if (this.moveControl == undefined) {
       this.moveControl = false;
@@ -157,8 +161,7 @@ class xiaomiFanDevice {
     this.prepareNaturalModeButtonService();
     this.prepareShutdownTimerService();
     this.prepareAngleButtonsService();
-
-    // device specific services
+    this.prepareSleepModeButtonService();
     this.prepareIoniserButtonService();
     this.prepareTemperatureService();
     this.prepareRelativeHumidityService();
@@ -261,7 +264,7 @@ class xiaomiFanDevice {
   }
 
   prepareNaturalModeButtonService() {
-    if (this.naturalModeButton && (this.fanDevice.supportsNaturalMode() || this.fanDevice.supportsSleepMode())) {
+    if (this.naturalModeButton && this.fanDevice.supportsNaturalMode()) {
       this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'naturalModeButtonService');
       this.naturalModeButtonService
         .getCharacteristic(Characteristic.On)
@@ -273,6 +276,22 @@ class xiaomiFanDevice {
         });
 
       this.fanAccesory.addService(this.naturalModeButtonService);
+    }
+  }
+
+  prepareSleepModeButtonService() {
+    if (this.sleepModeButton && this.fanDevice.supportsSleepMode()) {
+      this.sleepModeButtonService = new Service.Switch(this.name + ' Sleep mode', 'sleepModeButtonService');
+      this.sleepModeButtonService
+        .getCharacteristic(Characteristic.On)
+        .on('get', (callback) => {
+          this.getSleepMode(callback);
+        })
+        .on('set', (state, callback) => {
+          this.setSleepMode(state, callback);
+        });
+
+      this.fanAccesory.addService(this.sleepModeButtonService);
     }
   }
 
@@ -382,36 +401,6 @@ class xiaomiFanDevice {
 
       this.fanAccesory.addService(this.batteryService);
     }
-  }
-
-
-  /*----------========== UPDATE SERVICES BASED ON DEVICE ==========----------*/
-
-  updateServicesForDevice() {
-    // rename natural mode to sleep mode
-    if (this.fanDevice.supportsSleepMode()) {
-      if (this.naturalModeButtonService) this.naturalModeButtonService.getCharacteristic(Characteristic.Name).updateValue(this.name + ' Sleep mode');
-    }
-
-    // remove move control on unsupported devices
-    if (this.fanDevice.supportsLeftRightMove() === false) {
-      if (this.moveLeftService) this.fanAccesory.removeService(this.moveLeftService);
-      if (this.moveRightService) this.fanAccesory.removeService(this.moveRightService);
-    }
-
-    // remove angle buttons on unsupported devices
-    if (this.fanDevice.supportsOscillationAngle() === false) {
-      this.angleButtonsService.forEach((value, i) => {
-        this.fanAccesory.removeService(value);
-      });
-      this.angleButtonsService = null;
-    }
-
-    // temperature and relative humidity services
-    this.prepareIoniserButtonService();
-    this.prepareTemperatureService();
-    this.prepareRelativeHumidityService();
-    this.prepareBatteryService();
   }
 
 
@@ -586,6 +575,23 @@ class xiaomiFanDevice {
       callback();
     } else {
       callback(this.createError(`cannot set natural mode state`));
+    }
+  }
+
+  getSleepMode(callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      callback(null, this.fanDevice.isSleepModeEnabled());
+      return;
+    }
+    callback(null, false);
+  }
+
+  setSleepMode(state, callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      this.fanDevice.setSleepModeEnabled(state);
+      callback();
+    } else {
+      callback(this.createError(`cannot set sleep mode state`));
     }
   }
 
