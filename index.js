@@ -1,7 +1,6 @@
-const miio = require('miio');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-const FanDeviceFactory = require('./devices/fanDeviceFactory.js');
+const FanController = require('./lib/FanController.js');
 
 let Service, Characteristic, Homebridge, Accessory;
 
@@ -72,7 +71,7 @@ class xiaomiFanDevice {
     }
 
 
-    this.logInfo(`Init - got Fan configuration, initializing device with name: ${this.name}`);
+    this.logInfo(`Init - got fan configuration, initializing device with name: ${this.name}`);
 
 
     // check if prefs directory ends with a /, if not then add it
@@ -95,54 +94,35 @@ class xiaomiFanDevice {
     //try to load cached fan info
     this.loadFanInfo();
 
-    //prepare the services
-    this.initFanAccessory();
-
     //start the fan discovery
-    this.connectToFan();
+    this.discoverFan();
   }
 
 
   /*----------========== SETUP ==========----------*/
 
-  connectToFan() {
-    let checkDelayTime = this.pollingInterval * 6; // 6 times alive polling interval
-    miio.device({
-      address: this.ip,
-      token: this.token
-    }).then(device => {
-      this.logInfo(`Found Fan ${device.miioModel}`);
-      this.setupDevice(device);
-    }).catch(err => {
-      this.logDebug(err);
-      this.logDebug(`Fan not found! Retrying in ${checkDelayTime/1000} seconds!`);
-      setTimeout(() => {
-        this.connectToFan();
-      }, checkDelayTime);
+  discoverFan() {
+    let fanController = new FanController(this.ip, this.token, this.deviceId, this.cachedFanInfo.model, this.name, this.pollingInterval, this.log);
+
+    fanController.on('fanDeviceReady', (fanDevice) => {
+      this.fanDevice = fanDevice;
+
+      //prepare the fan accessory and services
+      if (!this.fanAccesory) {
+        this.initFanAccessory();
+      }
     });
-  }
 
-  setupDevice(miioDevice) {
-    // create the fan device
-    this.fanDevice = FanDeviceFactory.createFanDevice(miioDevice, this.ip, this.token, this.deviceId, this.name, this.pollingInterval, this.log, this);
-
-    if (this.fanDevice) {
-      // do devices specific fan service updates
-      this.updateServicesForDevice();
-
-      // update the information service
-      this.updateInformationService();
-
-      // register for the fan update properties event
-      this.fanDevice.on('fanPropertiesUpdated', (res) => {
-        this.updateFanStatus();
-      });
-
+    fanController.on('connectedToFan', (fanDevice) => {
       // save fan information
       this.saveFanInfo();
-    } else {
-      this.logError(`Error creating fan device!`);
-    }
+    });
+
+    fanController.on('fanPropertiesUpdated', (fanDevice) => {
+      this.updateFanStatus();
+    });
+
+    fanController.connectToFan();
   }
 
 
@@ -156,7 +136,9 @@ class xiaomiFanDevice {
     this.fanAccesory = new Accessory(this.name, this.UUID, Homebridge.hap.Accessory.Categories.FAN);
 
     // prepare accessory services
-    this.setupAccessoryServices();
+    if (this.fanDevice) {
+      this.setupAccessoryServices();
+    }
 
     this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [this.fanAccesory]);
   }
@@ -187,10 +169,8 @@ class xiaomiFanDevice {
     // remove the preconstructed information service, since i will be adding my own
     this.fanAccesory.removeService(this.fanAccesory.getService(Service.AccessoryInformation));
 
-    let fanModel = this.fanDevice ? this.fanDevice.getFanModel() : null;
-    fanModel = fanModel || this.cachedFanInfo.model || 'Unknown';
-    let fanDeviceId = this.fanDevice ? this.fanDevice.getDeviceId() : null;
-    fanDeviceId = fanDeviceId || this.cachedFanInfo.deviceId || 'Unknown';
+    let fanModel = this.fanDevice.getFanModel() || 'Unknown';
+    let fanDeviceId = this.fanDevice.getDeviceId() || 'Unknown';
 
     this.informationService = new Service.AccessoryInformation();
     this.informationService
@@ -233,7 +213,7 @@ class xiaomiFanDevice {
   }
 
   prepareMoveControl() {
-    if (this.moveControl) {
+    if (this.moveControl && this.fanDevice.supportsLeftRightMove()) {
       this.moveLeftService = new Service.Switch(this.name + ' Move left', 'moveLeftService');
       this.moveLeftService
         .getCharacteristic(Characteristic.On)
@@ -257,7 +237,7 @@ class xiaomiFanDevice {
   }
 
   prepareBuzzerControlService() {
-    if (this.buzzerControl) {
+    if (this.buzzerControl && this.fanDevice.supportsBuzzerControl()) {
       this.buzzerService = new Service.Switch(this.name + ' Buzzer', 'buzzerService');
       this.buzzerService
         .getCharacteristic(Characteristic.On)
@@ -269,7 +249,7 @@ class xiaomiFanDevice {
   }
 
   prepareLedControlService() {
-    if (this.ledControl) {
+    if (this.ledControl && this.fanDevice.supportsLedControl()) {
       this.ledService = new Service.Switch(this.name + ' LED', 'ledService');
       this.ledService
         .getCharacteristic(Characteristic.On)
@@ -281,7 +261,7 @@ class xiaomiFanDevice {
   }
 
   prepareNaturalModeButtonService() {
-    if (this.naturalModeButton) {
+    if (this.naturalModeButton && (this.fanDevice.supportsNaturalMode() || this.fanDevice.supportsSleepMode())) {
       this.naturalModeButtonService = new Service.Switch(this.name + ' Natural mode', 'naturalModeButtonService');
       this.naturalModeButtonService
         .getCharacteristic(Characteristic.On)
@@ -297,7 +277,7 @@ class xiaomiFanDevice {
   }
 
   prepareShutdownTimerService() {
-    if (this.shutdownTimer) {
+    if (this.shutdownTimer && this.fanDevice.supportsPowerOffTimer()) {
       this.shutdownTimerService = new Service.Lightbulb(this.name + ' Shutdown timer', 'shutdownTimerService');
       this.shutdownTimerService
         .getCharacteristic(Characteristic.On)
@@ -313,7 +293,7 @@ class xiaomiFanDevice {
   }
 
   prepareAngleButtonsService() {
-    if (this.angleButtons === undefined || this.angleButtons === null || this.angleButtons.length <= 0) {
+    if (this.angleButtons === undefined || this.angleButtons === null || this.angleButtons.length <= 0 || this.fanDevice.supportsOscillationAngle() === false) {
       return;
     }
 
@@ -342,7 +322,7 @@ class xiaomiFanDevice {
   }
 
   prepareIoniserButtonService() {
-    if (this.ioniserButton && this.fanDevice && this.fanDevice.supportsIoniser()) {
+    if (this.ioniserButton && this.fanDevice.supportsIoniser()) {
       this.ioniserButtonService = new Service.Switch(this.name + ' Ioniser', 'ioniserButtonService');
       this.ioniserButtonService
         .getCharacteristic(Characteristic.On)
@@ -358,7 +338,7 @@ class xiaomiFanDevice {
   }
 
   prepareTemperatureService() {
-    if (this.fanDevice && this.fanDevice.supportsTemperature()) {
+    if (this.fanDevice.supportsTemperature()) {
       this.temperatureService = new Service.TemperatureSensor(this.name + ' Temp', 'temperatureService');
       this.temperatureService
         .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
@@ -373,7 +353,7 @@ class xiaomiFanDevice {
   }
 
   prepareRelativeHumidityService() {
-    if (this.fanDevice && this.fanDevice.supportsRelativeHumidity()) {
+    if (this.fanDevice.supportsRelativeHumidity()) {
       this.relativeHumidityService = new Service.HumiditySensor(this.name + ' Humidity', 'relativeHumidityService');
       this.relativeHumidityService
         .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
@@ -388,7 +368,7 @@ class xiaomiFanDevice {
   }
 
   prepareBatteryService() {
-    if (this.fanDevice && this.fanDevice.hasBuiltInBattery() && this.fanDevice.supportsBatteryStateReporting()) {
+    if (this.fanDevice.hasBuiltInBattery() && this.fanDevice.supportsBatteryStateReporting()) {
       this.batteryService = new Service.BatteryService(this.name + ' Battery', 'batteryService');
       this.batteryService
         .setCharacteristic(Characteristic.ChargingState, Characteristic.ChargingState.NOT_CHARGING)
@@ -791,7 +771,7 @@ class xiaomiFanDevice {
     }
   }
 
-  loadFanInfo(){
+  loadFanInfo() {
     try {
       this.cachedFanInfo = JSON.parse(fs.readFileSync(this.fanInfoFile));
     } catch (err) {
