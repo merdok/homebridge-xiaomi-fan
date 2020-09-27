@@ -127,7 +127,9 @@ Show a slider (as light bulb) which allows to set a shutdown timer in minutes. *
 - `angleButtons` [optional]
 Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. Only on supported devices! **Default: "" (disabled)**
 - `ioniserControl` [optional]
-Show a switch which allows to quickly enable/disable the ioniser on your fan. Works only on supported devices. **Default: false**
+Show a switch which allows to quickly enable/disable the ioniser on your fan. Only on supported devices! **Default: false**
+- `levelControl` [optional]
+Show fan level switches which allow to change the fan level. Only on supported devices! **Default: true**
 
 ## Troubleshooting
 If you have any issues with the plugin or fan services then you can run homebridge in debug mode, which will provide some additional information. This might be useful for debugging issues.

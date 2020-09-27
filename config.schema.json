@@ -114,7 +114,13 @@
             "type": "boolean",
             "default": false,
             "required": false
-          }
+          },
+          "levelControl": {
+            "title": "Fan level service",
+            "description": "Show fan level switches which allow to change the fan level. Only on supported devices!",
+            "type": "string",
+            "required": false
+          },
         }
       }
     }
