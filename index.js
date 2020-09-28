@@ -206,7 +206,7 @@ class xiaomiFanDevice {
     this.fanService
       .addCharacteristic(Characteristic.CurrentFanState) // for what is this used?
       .on('get', this.getFanState.bind(this));
-    if (this.fanDevice.supportFanSpeed()) {
+    if (this.fanDevice.supportsFanSpeed()) {
       this.fanService
         .addCharacteristic(Characteristic.RotationSpeed)
         .on('get', this.getRotationSpeed.bind(this))
@@ -770,7 +770,7 @@ getBatteryLevelStatus(callback) {
 updateFanStatus() {
   if (this.fanDevice) {
     if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
-    if (this.fanService && this.fanDevice.supportFanSpeed()) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
+    if (this.fanService && this.fanDevice.supportsFanSpeed()) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
     if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
     if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.getBuzzerLevel() === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
     if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
