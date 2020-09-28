@@ -694,7 +694,7 @@ class xiaomiFanDevice {
 
   getFanLevelState(callback, level) {
     let levelButtonEnabled = false;
-    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+    if (this.fanDevice && this.fanDevice.isFanConnected() && this.fanDevice.isPowerOn()) {
       levelButtonEnabled = this.fanDevice.getFanLevel() === level;
     }
     callback(null, levelButtonEnabled);
@@ -703,12 +703,15 @@ class xiaomiFanDevice {
   setFanLevelState(state, callback, level) {
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (state) {
+        // if fan turned off then turn it on
+        if (this.fanDevice.isPowerOn() === false) {
+          this.fanDevice.setPowerOn(true);
+        }
         this.fanDevice.setFanLevel(level);
-      } else {
-        setTimeout(() => {
-          this.updateFanLevelButtons();
-        }, BUTTON_RESET_TIMEOUT);
       }
+      setTimeout(() => {
+        this.updateFanLevelButtons();
+      }, BUTTON_RESET_TIMEOUT);
       callback();
     } else {
       callback(this.createError(`cannot set fan level`));
@@ -816,7 +819,7 @@ updateFanLevelButtons() {
   if (this.levelControlService) {
     let currentLevel = this.fanDevice.getFanLevel();
     this.levelControlService.forEach((tmpFanLevelButton, i) => {
-      if (currentLevel === i + 1) {  // levels start from 1, index from 0 hence add 1
+      if (currentLevel === i + 1 && this.fanDevice.isPowerOn()) {  // levels start from 1, index from 0 hence add 1
         tmpFanLevelButton.getCharacteristic(Characteristic.On).updateValue(true);
       } else {
         tmpFanLevelButton.getCharacteristic(Characteristic.On).updateValue(false);
