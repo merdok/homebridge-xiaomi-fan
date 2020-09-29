@@ -337,6 +337,13 @@ class xiaomiFanDevice {
     this.angleButtonsService = new Array();
     this.angleButtons.forEach((value, i) => {
       let parsedValue = parseInt(value);
+
+      // if specified angle not within range then show a a warning and stop processing this value
+      if (this.fanDevice.checkOscillationAngleWithinRange(parsedValue) === false) {
+        this.logWarn(`Specified angle ${parsedValue} is not within supported range ${JSON.stringify(this.fanDevice.oscillationAngleRange())}. Not adding angle button!`);
+        return;
+      }
+
       this.angleButtons[i] = parsedValue;
       let tmpAngleButton = new Service.Switch(this.name + ' Angle - ' + parsedValue, 'angleButtonService' + i);
       tmpAngleButton
@@ -722,157 +729,157 @@ class xiaomiFanDevice {
     let ioniserButtonEnabled = false;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       ioniserButtonEnabled = this.fanDevice.isIoniserEnabled();
-  }
-  callback(null, ioniserButtonEnabled);
-}
-
-setIoniserState(state, callback) {
-  if (this.fanDevice && this.fanDevice.isFanConnected()) {
-    this.fanDevice.setIoniserEnabled(state);
-    callback();
-  } else {
-    callback(this.createError(`cannot set ioniser state`));
-  }
-}
-
-getCurrentTemperature(callback) {
-  let temp = 0;
-  if (this.fanDevice && this.fanDevice.isFanConnected()) {
-    temp = this.fanDevice.getTemperature();
-  }
-  callback(null, temp);
-}
-
-getCurrentRelativeHumidity(callback) {
-  let relHumidity = 0;
-  if (this.fanDevice && this.fanDevice.isFanConnected()) {
-    relHumidity = this.fanDevice.getRelativeHumidity();
-  }
-  callback(null, relHumidity);
-}
-
-getBatteryLevel(callback) {
-  let batteryLevel = 0;
-  if (this.fanDevice && this.fanDevice.isFanConnected()) {
-    batteryLevel = this.fanDevice.getBatteryLevel();
-  }
-  callback(null, batteryLevel);
-}
-
-getBatteryLevelStatus(callback) {
-  let batteryLevelStatus = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-  if (this.fanDevice && this.fanDevice.isFanConnected()) {
-    batteryLevelStatus = this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-  }
-  callback(null, batteryLevelStatus);
-}
-
-
-/*----------========== HELPERS ==========----------*/
-
-updateFanStatus() {
-  if (this.fanDevice) {
-    if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
-    if (this.fanService && this.fanDevice.supportsFanSpeed()) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
-    if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
-    if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.getBuzzerLevel() === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
-    if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
-    if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
-    if (this.naturalModeControlService) this.naturalModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
-    if (this.sleepModeControlService) this.sleepModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isSleepModeEnabled());
-    if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
-    if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
-    if (this.ioniserControlService) this.ioniserControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isIoniserEnabled());
-    if (this.temperatureService) this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.fanDevice.getTemperature());
-    if (this.relativeHumidityService) this.relativeHumidityService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(this.fanDevice.getRelativeHumidity());
-    if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.fanDevice.getBatteryLevel());
-    if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.StatusLowBattery).updateValue(this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
-    this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
-    this.updateFanLevelButtons();
-  }
-}
-
-updateAngleButtonsAndSwingMode(activeAngle, enabled) {
-  if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(enabled ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
-  if (this.angleButtonsService) {
-    // if swing mode disabled then just disable all the angle switches
-    if (enabled === false) {
-      activeAngle = "disabled"; // use fake value for angle
     }
+    callback(null, ioniserButtonEnabled);
+  }
 
-    // if angle not specified then automatically update the status
-    if (activeAngle === undefined || activeAngle === null) {
-      activeAngle = this.fanDevice.getAngle();
+  setIoniserState(state, callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      this.fanDevice.setIoniserEnabled(state);
+      callback();
+    } else {
+      callback(this.createError(`cannot set ioniser state`));
     }
+  }
 
-    this.angleButtonsService.forEach((tmpAngleButton, i) => {
-      if (activeAngle === this.angleButtons[i]) {
-        tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(true);
-      } else {
-        tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(false);
+  getCurrentTemperature(callback) {
+    let temp = 0;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      temp = this.fanDevice.getTemperature();
+    }
+    callback(null, temp);
+  }
+
+  getCurrentRelativeHumidity(callback) {
+    let relHumidity = 0;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      relHumidity = this.fanDevice.getRelativeHumidity();
+    }
+    callback(null, relHumidity);
+  }
+
+  getBatteryLevel(callback) {
+    let batteryLevel = 0;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      batteryLevel = this.fanDevice.getBatteryLevel();
+    }
+    callback(null, batteryLevel);
+  }
+
+  getBatteryLevelStatus(callback) {
+    let batteryLevelStatus = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      batteryLevelStatus = this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    }
+    callback(null, batteryLevelStatus);
+  }
+
+
+  /*----------========== HELPERS ==========----------*/
+
+  updateFanStatus() {
+    if (this.fanDevice) {
+      if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
+      if (this.fanService && this.fanDevice.supportsFanSpeed()) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.fanDevice.getRotationSpeed());
+      if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
+      if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.getBuzzerLevel() === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
+      if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
+      if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
+      if (this.naturalModeControlService) this.naturalModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
+      if (this.sleepModeControlService) this.sleepModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isSleepModeEnabled());
+      if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
+      if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getShutdownTimer());
+      if (this.ioniserControlService) this.ioniserControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isIoniserEnabled());
+      if (this.temperatureService) this.temperatureService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.fanDevice.getTemperature());
+      if (this.relativeHumidityService) this.relativeHumidityService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(this.fanDevice.getRelativeHumidity());
+      if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.fanDevice.getBatteryLevel());
+      if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.StatusLowBattery).updateValue(this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
+      this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
+      this.updateFanLevelButtons();
+    }
+  }
+
+  updateAngleButtonsAndSwingMode(activeAngle, enabled) {
+    if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(enabled ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
+    if (this.angleButtonsService) {
+      // if swing mode disabled then just disable all the angle switches
+      if (enabled === false) {
+        activeAngle = "disabled"; // use fake value for angle
       }
-    });
-  }
-}
 
-updateFanLevelButtons() {
-  if (this.levelControlService) {
-    let currentLevel = this.fanDevice.getFanLevel();
-    this.levelControlService.forEach((tmpFanLevelButton, i) => {
-      if (currentLevel === i + 1 && this.fanDevice.isPowerOn()) {  // levels start from 1, index from 0 hence add 1
-        tmpFanLevelButton.getCharacteristic(Characteristic.On).updateValue(true);
-      } else {
-        tmpFanLevelButton.getCharacteristic(Characteristic.On).updateValue(false);
+      // if angle not specified then automatically update the status
+      if (activeAngle === undefined || activeAngle === null) {
+        activeAngle = this.fanDevice.getAngle();
       }
-    });
+
+      this.angleButtonsService.forEach((tmpAngleButton, i) => {
+        if (activeAngle === this.angleButtons[i]) {
+          tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(true);
+        } else {
+          tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(false);
+        }
+      });
+    }
   }
-}
 
-createError(msg) {
-  return new Error(`[${this.name}] Fan is not connected, ` + msg);
-}
-
-saveFanInfo() {
-  // save model name and deviceId
-  if (this.fanDevice) {
-    this.cachedFanInfo.model = this.fanDevice.getFanModel();
-    this.cachedFanInfo.deviceId = this.fanDevice.getDeviceId();
-    fs.writeFile(this.fanInfoFile, JSON.stringify(this.cachedFanInfo), (err) => {
-      if (err) {
-        this.logDebug('Error occured could not write fan model info %s', err);
-      } else {
-        this.logDebug('Successfully saved fan info!');
-      }
-    });
+  updateFanLevelButtons() {
+    if (this.levelControlService) {
+      let currentLevel = this.fanDevice.getFanLevel();
+      this.levelControlService.forEach((tmpFanLevelButton, i) => {
+        if (currentLevel === i + 1 && this.fanDevice.isPowerOn()) { // levels start from 1, index from 0 hence add 1
+          tmpFanLevelButton.getCharacteristic(Characteristic.On).updateValue(true);
+        } else {
+          tmpFanLevelButton.getCharacteristic(Characteristic.On).updateValue(false);
+        }
+      });
+    }
   }
-}
 
-loadFanInfo() {
-  try {
-    this.cachedFanInfo = JSON.parse(fs.readFileSync(this.fanInfoFile));
-  } catch (err) {
-    this.logDebug('Fan info file does not exist yet, device unknown!');
+  createError(msg) {
+    return new Error(`[${this.name}] Fan is not connected, ` + msg);
   }
-}
+
+  saveFanInfo() {
+    // save model name and deviceId
+    if (this.fanDevice) {
+      this.cachedFanInfo.model = this.fanDevice.getFanModel();
+      this.cachedFanInfo.deviceId = this.fanDevice.getDeviceId();
+      fs.writeFile(this.fanInfoFile, JSON.stringify(this.cachedFanInfo), (err) => {
+        if (err) {
+          this.logDebug('Error occured could not write fan model info %s', err);
+        } else {
+          this.logDebug('Successfully saved fan info!');
+        }
+      });
+    }
+  }
+
+  loadFanInfo() {
+    try {
+      this.cachedFanInfo = JSON.parse(fs.readFileSync(this.fanInfoFile));
+    } catch (err) {
+      this.logDebug('Fan info file does not exist yet, device unknown!');
+    }
+  }
 
 
-/*----------========== LOG ==========----------*/
+  /*----------========== LOG ==========----------*/
 
-logInfo(message, ...args) {
-  this.log.info((this.name ? `[${this.name}] ` : "") + message, ...args);
-}
+  logInfo(message, ...args) {
+    this.log.info((this.name ? `[${this.name}] ` : "") + message, ...args);
+  }
 
-logWarn(message, ...args) {
-  this.log.warn((this.name ? `[${this.name}] ` : "") + message, ...args);
-}
+  logWarn(message, ...args) {
+    this.log.warn((this.name ? `[${this.name}] ` : "") + message, ...args);
+  }
 
-logDebug(message, ...args) {
-  this.log.debug((this.name ? `[${this.name}] ` : "") + message, ...args);
-}
+  logDebug(message, ...args) {
+    this.log.debug((this.name ? `[${this.name}] ` : "") + message, ...args);
+  }
 
-logError(message, ...args) {
-  this.log.error((this.name ? `[${this.name}] ` : "") + message, ...args);
-}
+  logError(message, ...args) {
+    this.log.error((this.name ? `[${this.name}] ` : "") + message, ...args);
+  }
 
 }
 
