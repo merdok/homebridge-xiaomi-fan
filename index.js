@@ -325,8 +325,13 @@ class xiaomiFanDevice {
   }
 
   prepareAngleButtonsService() {
-    if (this.angleButtons === undefined || this.angleButtons === null || this.angleButtons.length <= 0 || this.fanDevice.supportsOscillationAngle() === false) {
-      return;
+    if (this.angleButtons === undefined || this.angleButtons === null || this.angleButtons.length <= 0 || (this.fanDevice.supportsOscillationAngle() === false && this.fanDevice.supportsOscillationLevels() === false)) {
+      if (this.fanDevice.supportsOscillationLevels()) {
+        // if the fan supports osicllation levels, and user did not specify the property then show all oscillation levels
+        this.angleButtons = this.fanDevice.oscillationLevels();
+      } else {
+        return;
+      }
     }
 
     if (Array.isArray(this.angleButtons) === false) {
@@ -338,9 +343,7 @@ class xiaomiFanDevice {
     this.angleButtons.forEach((value, i) => {
       let parsedValue = parseInt(value);
 
-      // if specified angle not within range then show a a warning and stop processing this value
-      if (this.fanDevice.checkOscillationAngleWithinRange(parsedValue) === false) {
-        this.logWarn(`Specified angle ${parsedValue} is not within supported range ${JSON.stringify(this.fanDevice.oscillationAngleRange())}. Not adding angle button!`);
+      if (this.checkAngleButtonValue(parsedValue) === false) {
         return;
       }
 
@@ -862,6 +865,23 @@ class xiaomiFanDevice {
     }
   }
 
+  checkAngleButtonValue(angleValue) {
+    if (this.fanDevice.supportsOscillationAngle()) {
+      // if specified angle not within range then show a a warning and stop processing this value
+      if (this.fanDevice.checkOscillationAngleWithinRange(angleValue) === false) {
+        this.logWarn(`Specified angle ${angleValue} is not within the supported range ${JSON.stringify(this.fanDevice.oscillationAngleRange())}. Not adding angle button!`);
+        return false;
+      }
+    } else if (this.fanDevice.supportsOscillationLevels()) {
+      // if the fan uses predefined osiscllation levels then check if the specified angle is on the list
+      if (this.fanDevice.checkOscillationLevelSupported(angleValue) === false) {
+        this.logWarn(`Specified angle ${angleValue} is not within the supported angle levels of your fan. Allowed values: ${JSON.stringify(this.fanDevice.oscillationLevels())}. Not adding angle button!`);
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   /*----------========== LOG ==========----------*/
 
