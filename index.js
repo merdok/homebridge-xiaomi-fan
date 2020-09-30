@@ -266,7 +266,7 @@ class xiaomiFanDevice {
   }
 
   prepareLedControlService() {
-    if (this.ledControl) {
+    if (this.ledControl && this.fanDevice.supportsLedControl()) {
       if (this.fanDevice.supportsLedBrightness()) {
         // if brightness supported then add a lightbulb for controlling
         this.ledBrightnessService = new Service.Lightbulb(this.name + ' LED', 'ledBrightnessService');
@@ -417,7 +417,7 @@ class xiaomiFanDevice {
   }
 
   prepareTemperatureService() {
-    if (this.fanDevice.supportsTemperature()) {
+    if (this.fanDevice.supportsTemperatureReporting()) {
       this.temperatureService = new Service.TemperatureSensor(this.name + ' Temp', 'temperatureService');
       this.temperatureService
         .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
@@ -432,7 +432,7 @@ class xiaomiFanDevice {
   }
 
   prepareRelativeHumidityService() {
-    if (this.fanDevice.supportsRelativeHumidity()) {
+    if (this.fanDevice.supportsRelativeHumidityReporting()) {
       this.relativeHumidityService = new Service.HumiditySensor(this.name + ' Humidity', 'relativeHumidityService');
       this.relativeHumidityService
         .setCharacteristic(Characteristic.StatusFault, Characteristic.StatusFault.NO_FAULT)
@@ -632,14 +632,14 @@ class xiaomiFanDevice {
   getLedBrightness(callback) {
     let ledBrightness = 0;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
-      ledBrightness = this.fanDevice.getLedLevel();
+      ledBrightness = this.fanDevice.getLedBrightness();
     }
     callback(null, ledBrightness);
   }
 
   setLedBrightness(value, callback) {
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
-      this.fanDevice.setLedLevel(value);
+      this.fanDevice.setLedBrightness(value);
       callback();
     } else {
       callback(this.createError(`cannot set LED brightness`));
