@@ -266,14 +266,30 @@ class xiaomiFanDevice {
   }
 
   prepareLedControlService() {
-    if (this.ledControl && this.fanDevice.supportsLedControl()) {
-      this.ledService = new Service.Switch(this.name + ' LED', 'ledService');
-      this.ledService
-        .getCharacteristic(Characteristic.On)
-        .on('get', this.getLed.bind(this))
-        .on('set', this.setLed.bind(this));
+    if (this.ledControl) {
+      if (this.fanDevice.supportsLedBrightness()) {
+        // if brightness supported then add a lightbulb for controlling
+        this.ledBrightnessService = new Service.Lightbulb(this.name + ' LED', 'ledBrightnessService');
+        this.ledBrightnessService
+          .getCharacteristic(Characteristic.On)
+          .on('get', this.getLed.bind(this))
+          .on('set', this.setLed.bind(this));
+        this.ledBrightnessService
+          .addCharacteristic(new Characteristic.Brightness())
+          .on('get', this.getLedBrightness.bind(this))
+          .on('set', this.setLedBrightness.bind(this));
 
-      this.fanAccesory.addService(this.ledService);
+        this.fanAccesory.addService(this.ledBrightnessService);
+      } else if (this.fanDevice.supportsLedControl()) {
+        // if not then just a simple switch
+        this.ledService = new Service.Switch(this.name + ' LED', 'ledService');
+        this.ledService
+          .getCharacteristic(Characteristic.On)
+          .on('get', this.getLed.bind(this))
+          .on('set', this.setLed.bind(this));
+
+        this.fanAccesory.addService(this.ledService);
+      }
     }
   }
 
@@ -463,7 +479,7 @@ class xiaomiFanDevice {
       let isPowerOn = state === Characteristic.Active.ACTIVE;
       // only fire the setPowerOn method when we want to turn off the fan or the fan is off
       // the rotaion speed slider fires this method many times even when the fan is already on so i need to limit that
-      if (isPowerOn == false || this.fanDevice.isPowerOn() == false) {
+      if (isPowerOn === false || this.fanDevice.isPowerOn() === false) {
         this.fanDevice.setPowerOn(isPowerOn);
       }
       callback();
@@ -604,10 +620,29 @@ class xiaomiFanDevice {
 
   setLed(state, callback) {
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
-      this.fanDevice.setLedEnabled(state);
+      if (state === false || this.fanDevice.isLedEnabled() === false) {
+        this.fanDevice.setLedEnabled(state);
+      }
       callback();
     } else {
       callback(this.createError(`cannot set LED state`));
+    }
+  }
+
+  getLedBrightness(callback) {
+    let ledBrightness = 0;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      ledBrightness = this.fanDevice.getLedLevel();
+    }
+    callback(null, ledBrightness);
+  }
+
+  setLedBrightness(value, callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      this.fanDevice.setLedLevel(value);
+      callback();
+    } else {
+      callback(this.createError(`cannot set LED brightness`));
     }
   }
 
@@ -795,6 +830,8 @@ class xiaomiFanDevice {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.RotationDirection).updateValue(this.fanDevice.getBuzzerLevel() === 1 ? Characteristic.RotationDirection.CLOCKWISE : Characteristic.RotationDirection.COUNTER_CLOCKWISE);
       if (this.buzzerService) this.buzzerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isBuzzerEnabled());
       if (this.ledService) this.ledService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
+      if (this.ledBrightnessService) this.ledBrightnessService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isLedEnabled());
+      if (this.ledBrightnessService) this.ledBrightnessService.getCharacteristic(Characteristic.Brightness).updateValue(this.fanDevice.getLedLevel());
       if (this.naturalModeControlService) this.naturalModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isNaturalModeEnabled());
       if (this.sleepModeControlService) this.sleepModeControlService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isSleepModeEnabled());
       if (this.shutdownTimerService) this.shutdownTimerService.getCharacteristic(Characteristic.On).updateValue(this.fanDevice.isShutdownTimerEnabled());
