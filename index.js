@@ -99,6 +99,7 @@ class xiaomiFanDevice {
     // prepare variables
     this.fanDevice = undefined;
     this.cachedFanInfo = {};
+    this.rotationSpeedTimeout = null; // for rotation speed set debounce
 
     //try to load cached fan info
     this.loadFanInfo();
@@ -460,7 +461,11 @@ class xiaomiFanDevice {
   setPowerState(state, callback) {
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       let isPowerOn = state === Characteristic.Active.ACTIVE;
-      this.fanDevice.setPowerOn(isPowerOn);
+      // only fire the setPowerOn method when we want to turn off the fan or the fan is off
+      // the rotaion speed slider fires this method many times even when the fan is already on so i need to limit that
+      if (isPowerOn == false || this.fanDevice.isPowerOn() == false) {
+        this.fanDevice.setPowerOn(isPowerOn);
+      }
       callback();
     } else {
       callback(this.createError(`cannot set power state`));
@@ -485,7 +490,9 @@ class xiaomiFanDevice {
 
   setRotationSpeed(value, callback) {
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
-      this.fanDevice.setRotationSpeed(value);
+      // use debounce to limit the number of calls when the user slides the rotation slider
+      if (this.rotationSpeedTimeout) clearTimeout(this.rotationSpeedTimeout);
+      this.rotationSpeedTimeout = setTimeout(() => this.fanDevice.setRotationSpeed(value), 500);
       callback();
     } else {
       callback(this.createError(`cannot set rotation speed`));
