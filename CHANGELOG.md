@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.0] - 2020-10-02
+
+This update brings a lot of new changes and improvements. After the update the fan will be re-added to your Home app.
+New devices will now appear in the Home app automatically after the first connection has been established since the plugin needs to identify the fan model in order to create a device specific fan accessory.
+That means no new accessory will appear in HomeKit until the first successful connection. If you know your fan model then you can specify that in the config.json to speed up the discovery.
+
+### Added
+- Automatic device detection and device specific accessories
+- On supported devices temperature and humidity will now be shown
+- On supported devices the battery level will now be shown
+- "No response" will now be shown on the fan accessory if the fan is not connected
+- Show correct status of switches when the fan is not connected (switches got stuck at the last known status before)
+- Miio devices now support fan levels
+- dmaker.fan.p9 now supports sleep mode control
+- If a fan supports led brightness (0% to 100%) then show a lightbulb
+- New `mode` property which allows to specify the fan model for faster accessory creation
+- New `sleepModeControl` property which allows to enable/disable the sleep mode. Only on supported devices!
+- New `ioniserControl` property which allows to quickly enable/disable the ioniser on your fan. Only on supported devices!
+- New `fanLevelControl` property which when enabled will show predefined buttons to easily switch fan levels. Only on supported devices!
+
+### Fixed
+- Reduced the number of commands send to the fan when setting rotation speed using the speed slider
+- Fixed a bug where it was not possible to set rotation speed and control natural mode at the same time in scenes
+
+### Changed
+- The plugin now works as a dynamic platform which means that there is no need to manually add devices to HomeKit anymore
+- Only supported services by the fan will now appear on fan accessories and enabling services in the config.json will only have effect when the fan supports it
+- Renamed `naturalModeButton` property to `naturalModeControl` to be consistent with other properties (breaking change for some users)
+- Check if angle buttons are within the supported range by the fan
+- Reorganized project structure
+- Fixed some typos in the README
+
+### Removed
+- Removed the possibility to setup the plugin as an accessory (breaking change for some users)
+
+
 ## [1.3.1] - 2020-07-30
 ### Added
 - Added support for zhimi.fan.v2 and zhimi.fan.v3 (Smartmi DC Pedestal Fan) fans
