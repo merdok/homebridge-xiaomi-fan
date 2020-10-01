@@ -126,6 +126,8 @@ class xiaomiFanDevice {
     });
 
     fanController.on(Events.FAN_CONNECTED, (fanDevice) => {
+      // update fan information
+      this.updateInformationService();
       // save fan information
       this.saveFanInfo();
     });
