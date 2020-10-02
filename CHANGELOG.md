@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.1] - 2020-10-03
+### Fixed
+- Fixed a bug where the plugin would not have a stable connection to miot devices
+- Fixed config.schema.json
+
+
 ## [1.4.0] - 2020-10-02
 
 This update brings a lot of new changes and improvements. After the update the fan will be re-added to your Home app.
