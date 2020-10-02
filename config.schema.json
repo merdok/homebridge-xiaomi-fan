@@ -120,7 +120,7 @@
             "description": "Show fan level switches which allow to change the fan level. Only on supported devices!",
             "type": "string",
             "required": false
-          },
+          }
         }
       }
     }
