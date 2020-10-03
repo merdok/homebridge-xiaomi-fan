@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.2] - 2020-10-04
+### Added
+- new `deepDebugLog` property which enabled more detailed debug log
+- some under the hood improvements
+
+### Fixed
+- Fixed config.schema.json
+
+### Removed
+- Removed the battery reporting capability from Smartmi Fan 3 as it seems it does not report it
+
+
 ## [1.4.1] - 2020-10-03
 ### Fixed
 - Fixed a bug where the plugin would not have a stable connection to miot devices
@@ -28,7 +40,7 @@ That means no new accessory will appear in HomeKit until the first successful co
 - Miio devices now support fan levels
 - dmaker.fan.p9 now supports sleep mode control
 - If a fan supports led brightness (0% to 100%) then show a lightbulb
-- New `mode` property which allows to specify the fan model for faster accessory creation
+- New `model` property which allows to specify the fan model for faster accessory creation
 - New `sleepModeControl` property which allows to enable/disable the sleep mode. Only on supported devices!
 - New `ioniserControl` property which allows to quickly enable/disable the ioniser on your fan. Only on supported devices!
 - New `fanLevelControl` property which when enabled will show predefined buttons to easily switch fan levels. Only on supported devices!
