@@ -112,6 +112,8 @@ The fan model. If specified then the accessory will be created instantly without
 The directory where the fan device info will be stored. **Default: "~/.homebridge/.xiaomiFan"**
 - `pollingInterval` [optional]
 The fan state background polling interval in seconds. **Default: 5**
+- `deepDebugLog` [optional]
+Enables additional more detailed debug log. Useful when trying to figure out issues with the plugin. **Default: false**
 - `buzzerControl` [optional]
 Whether the buzzer service is enabled. This allows to turn on/off the fan buzzer. On Smartmi fans the rotation direction switch can be used to select between loud or quiet buzzer level. **Default: true**
 - `ledControl` [optional]
@@ -138,6 +140,12 @@ Homebridge debug mode:
 ```sh
 homebridge -D
 ```
+
+Deep debug log, add the following to your config.json:
+```json
+"deepDebugLog": true
+```
+This will enable additional extra log which might be helpful to debug all kind of issues.
 
 ## Special thanks
 [miio](https://github.com/aholstenson/miio) - the Node.js remote control module for Xiaomi Mi devices.

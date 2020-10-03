@@ -58,6 +58,11 @@
             "default": 5,
             "required": false
           },
+          "deepDebugLog": {
+            "title": "Enable deep debug log",
+            "description": "Enables additional more detailed debug log. Useful when trying to figure out issues with the plugin.",
+            "type": "boolean"
+          },
           "buzzerControl": {
             "title": "Buzzer control service",
             "description": "Whether to show buzzer control buttons.",

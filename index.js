@@ -46,6 +46,10 @@ class xiaomiFanDevice {
     this.pollingInterval = config['pollingInterval'] || 5;
     this.pollingInterval = this.pollingInterval * 1000;
     this.prefsDir = config['prefsDir'] || api.user.storagePath() + '/.xiaomiFan/';
+    this.deepDebugLog = config.deepDebugLog;
+    if (this.deepDebugLog === undefined) {
+      this.deepDebugLog = false;
+    }
     this.buzzerControl = config['buzzerControl'];
     if (this.buzzerControl == undefined) {
       this.buzzerControl = true;
@@ -115,6 +119,7 @@ class xiaomiFanDevice {
   discoverFan() {
     // if the user specified a model then use that, else try to get cached model
     let fanController = new FanController(this.ip, this.token, this.deviceId, this.model || this.cachedFanInfo.model, this.name, this.pollingInterval, this.log);
+    fanController.setDeepDebugLogEnabled(this.deepDebugLog);
 
     fanController.on(Events.FAN_DEVICE_READY, (fanDevice) => {
       this.fanDevice = fanDevice;
