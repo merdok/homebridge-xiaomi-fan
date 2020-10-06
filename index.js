@@ -343,11 +343,11 @@ class xiaomiFanDevice {
 
   prepareAngleButtonsService() {
     if (this.fanDevice.supportsOscillationAngle() === false && this.fanDevice.supportsOscillationLevels() === false) {
-        return;
+      return;
     }
 
     if (this.angleButtons === false) {
-        return;
+      return;
     }
 
     if (this.angleButtons === undefined || this.angleButtons === null) {
@@ -723,7 +723,7 @@ class xiaomiFanDevice {
   getAngleButtonState(callback, angle) {
     let angleButtonEnabled = false;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
-      if (this.fanDevice.isSwingModeEnabled() === true) {
+      if (this.fanDevice.isPowerOn() && this.fanDevice.isSwingModeEnabled()) {
         angleButtonEnabled = this.fanDevice.getAngle() === angle;
       }
     }
@@ -853,8 +853,8 @@ class xiaomiFanDevice {
   updateAngleButtonsAndSwingMode(activeAngle, enabled) {
     if (this.fanService) this.fanService.getCharacteristic(Characteristic.SwingMode).updateValue(enabled ? Characteristic.SwingMode.SWING_ENABLED : Characteristic.SwingMode.SWING_DISABLED);
     if (this.angleButtonsService) {
-      // if swing mode disabled then just disable all the angle switches
-      if (enabled === false) {
+      // if swing mode disabled or the fan is not turned on then just disable all the angle switches
+      if (enabled === false || this.fanDevice.isPowerOn() === false) {
         activeAngle = "disabled"; // use fake value for angle
       }
 
