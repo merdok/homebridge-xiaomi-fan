@@ -342,7 +342,15 @@ class xiaomiFanDevice {
   }
 
   prepareAngleButtonsService() {
-    if (this.angleButtons === undefined || this.angleButtons === null || this.angleButtons.length <= 0 || (this.fanDevice.supportsOscillationAngle() === false && this.fanDevice.supportsOscillationLevels() === false)) {
+    if (this.fanDevice.supportsOscillationAngle() === false && this.fanDevice.supportsOscillationLevels() === false) {
+        return;
+    }
+
+    if (this.angleButtons === false) {
+        return;
+    }
+
+    if (this.angleButtons === undefined || this.angleButtons === null) {
       if (this.fanDevice.supportsOscillationLevels()) {
         // if the fan supports osicllation levels, and user did not specify the property then show all oscillation levels
         this.angleButtons = this.fanDevice.oscillationLevels();
