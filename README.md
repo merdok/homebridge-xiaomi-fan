@@ -127,7 +127,9 @@ Whether the move service is enabled. This allows to move the fan in 5° to the l
 - `shutdownTimer` [optional]
 Show a slider (as light bulb) which allows to set a shutdown timer in minutes. **Default: false**
 - `angleButtons` [optional]
-Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Array of values. Possible angles 0-120. Only on supported devices! **Default: "" (disabled)**
+Whether the angle buttons service is enabled. This allows to create buttons which can switch between different oscillation angles. Only on supported devices! **Default: "" (disabled)**
+  - Set an array of numeric values. Possible values depend on the fan model
+  - Some fans support predefined angle buttons, in the case if the property is not specified the angle buttons are retrived from the fan and displayed as switches. If you want to prevent that behaviour set the property value as an empty array **[]**
 - `ioniserControl` [optional]
 Show a switch which allows to quickly enable/disable the ioniser on your fan. Only on supported devices! **Default: false**
 - `fanLevelControl` [optional]
