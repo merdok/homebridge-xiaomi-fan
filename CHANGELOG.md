@@ -7,16 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.3] - 2020-10-07
+### Fixed
+- Fixed a bug where disabling the predefined angleButtons would not have any effect
+
+### Changed
+- The angleButtons state will now be disabled when the fan is turned off
+- Updated README to clarify a property more
+
+
 ## [1.4.2] - 2020-10-04
 ### Added
-- new `deepDebugLog` property which enabled more detailed debug log
+- new `deepDebugLog` property which enables more detailed debug log
 - some under the hood improvements
 
 ### Fixed
 - Fixed config.schema.json
 
 ### Removed
-- Removed the battery reporting capability from Smartmi Fan 3 as it seems it does not report it
+- Removed the battery reporting capability from Smartmi Fan 3 as it seems that it is not supported by the fan
 
 
 ## [1.4.1] - 2020-10-03
