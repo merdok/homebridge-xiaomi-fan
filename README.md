@@ -34,6 +34,8 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * dmaker.fan.p5 (Mi Smart Standing Fan 1X)
 * dmaker.fan.p9 (Mi Smart Tower Fan)
 * dmaker.fan.p10 (Mi Smart Standing Fan 2)
+* dmaker.fan.p11 (Mi Smart Standing Fan Pro)
+* dmaker.fan.p15 (Mi Smart Standing Fan Pro EU)
 
 Note: The dmaker.fan.1c does not support `moveControl` (move left/right) and `angleButtons`.
 
