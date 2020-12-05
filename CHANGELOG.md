@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.4] - 2020-12-06
+### Added
+- Added support for the dmaker.fan.p11 (Mi Smart Standing Fan Pro)
+- Added support for the dmaker.fan.p15 (Mi Smart Standing Fan Pro EU)
+
+
 ## [1.4.3] - 2020-10-07
 ### Fixed
 - Fixed a bug where disabling the predefined angleButtons would not have any effect
