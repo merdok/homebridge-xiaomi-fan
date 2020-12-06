@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.5] - 2020-12-07
+### Changed
+- Remove the fan speed capability from dmaker.fan.p11 and dmaker.fan.p15 as it is not clear yet how to control it on those fan models
+
+
 ## [1.4.4] - 2020-12-06
 ### Added
 - Added support for the dmaker.fan.p11 (Mi Smart Standing Fan Pro)
