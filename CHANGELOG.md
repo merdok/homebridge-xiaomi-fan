@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.7] - 2020-12-28
+### Added
+- Added support for the zhimi.fan.fa1 (Mijia DC Circulating Fan)
+- New capabilities
+- Show Up/Down move control when the fan supports it
+
+
 ## [1.4.6] - 2020-12-07
 ### Added
 - Added support for the dmaker.fan.p8 (Mi Smart Standing Fan 1C CN)
