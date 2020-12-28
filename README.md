@@ -30,6 +30,7 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * zhimi.fan.za3 (Smartmi Standing Fan 2)
 * zhimi.fan.za4 (Smartmi Standing Fan 2S)
 * zhimi.fan.za5 (Smartmi Standing Fan 3)
+* zhimi.fan.fa1 (Mijia DC Circulating Fan)
 * dmaker.fan.1c (Mi Smart Standing Fan 1C)
 * dmaker.fan.p5 (Mi Smart Standing Fan 1X)
 * dmaker.fan.p8 (Mi Smart Standing Fan 1C CN)
