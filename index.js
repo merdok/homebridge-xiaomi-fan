@@ -259,6 +259,28 @@ class xiaomiFanDevice {
 
       this.fanAccesory.addService(this.moveRightService);
     }
+
+    if (this.moveControl && this.fanDevice.supportsUpDownMove()) {
+      this.moveUpService = new Service.Switch(this.name + ' Move Up', 'moveUpService');
+      this.moveUpService
+        .getCharacteristic(Characteristic.On)
+        .on('get', this.getMoveFanSwitch.bind(this))
+        .on('set', (state, callback) => {
+          this.setMoveFanSwitch(state, callback, 'up');
+        });
+
+      this.fanAccesory.addService(this.moveUpService);
+
+      this.moveDownService = new Service.Switch(this.name + ' Move down', 'moveDownService');
+      this.moveDownService
+        .getCharacteristic(Characteristic.On)
+        .on('get', this.getMoveFanSwitch.bind(this))
+        .on('set', (state, callback) => {
+          this.setMoveFanSwitch(state, callback, 'down');
+        });
+
+      this.fanAccesory.addService(this.moveDownService);
+    }
   }
 
   prepareBuzzerControlService() {
@@ -584,12 +606,18 @@ class xiaomiFanDevice {
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (direction === 'left') {
         this.fanDevice.moveLeft();
-      } else {
+      } else if (direction === 'right') {
         this.fanDevice.moveRight();
+      } else if (direction === 'up') {
+        this.fanDevice.moveUp();
+      } else if (direction === 'down') {
+        this.fanDevice.modeDown();
       }
       setTimeout(() => {
         if (this.moveLeftService) this.moveLeftService.getCharacteristic(Characteristic.On).updateValue(false);
         if (this.moveRightService) this.moveRightService.getCharacteristic(Characteristic.On).updateValue(false);
+        if (this.moveUpService) this.moveUpService.getCharacteristic(Characteristic.On).updateValue(false);
+        if (this.moveDownService) this.moveDownService.getCharacteristic(Characteristic.On).updateValue(false);
       }, BUTTON_RESET_TIMEOUT);
       callback();
     } else {
