@@ -3,7 +3,7 @@
   "pluginType": "platform",
   "singular": true,
   "headerDisplay": "Homebridge plugin for Xiaomi Fans",
-  "footerDisplay": "For a detailed description, see the [README](https://github.com/merdok/homebridge-xiaomi-fan#configuration-fields)",
+  "footerDisplay": "For a detailed description, see the [README](https://github.com/merdok/homebridge-xiaomi-fan#platform-configuration-fields)",
   "schema": {
     "devices": {
       "title": "Devices",
@@ -53,7 +53,7 @@
           },
           "pollingInterval": {
             "title": "Background polling interval",
-            "description": "How often to check the status of the tv in seconds.",
+            "description": "How often to check the status of the fan in seconds.",
             "type": "number",
             "default": 5,
             "required": false

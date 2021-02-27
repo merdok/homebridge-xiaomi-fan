@@ -1,7 +1,11 @@
 # Obtain Mi Home device token
 Use any of these methods to obtain the device token for the supported miio devices.
 
-## Method 1 - Obtain device token for miio devices that hide their token after setup
+## Method 1 - Obtain device token from Mi home account
+[Windows app, MAC OS app](https://github.com/Maxmudjon/Get_MiHome_devices_token/releases)
+
+
+## Method 2 - Obtain device token for miio devices that hide their token after setup
 Use one of these methods to obtain the device token for devices that hide their tokens after setup in the Mi Home App (like the Mi Robot Vacuum Cleaner with firmware 3.3.9_003077 or higher). This is usually the case for most Mi Home devices. The latest versions of the Mi Home smartphone app dont hold the token anymore so before you begin with any of these methods you will need to install an older version of the smartphone app. Version 5.0.19 works for sure with the 1st gen Vacuum Robot, for the 2nd gen (S50) you should try version 3.3.9_5.0.30. Android users can find older version of the app [here](https://www.apkmirror.com/apk/xiaomi-inc/mihome/).
 
 ### Android users
@@ -25,7 +29,7 @@ This method will only work when you install the Mi Home app version v5.4.54. You
 ```
 * Copy the token from this string and you are done.
 
-##### Extract token from a backup
+##### Extract token from a backup on Android phones that allow non-encrypted backups
 * Setup your Android device with the Mi Home app
 * Enable developer mode and USB debugging on your phone and connect it to your computer
 * Get the ADB tool
@@ -42,6 +46,22 @@ This method will only work when you install the Mi Home app version v5.4.54. You
 * Unzip the ".tar" file
 * Open /com.xiaomi.smarthome/db/miio2.db with a SQLite browser (for instance http://sqlitebrowser.org/)
 * Execute the query "select token from devicerecord where localIP is '192.168.0.1'" where you replace the IP address with the IP address of the Mi Home device you want to get the token from. It will show you the 32 character device token for your Mi Home device.
+
+##### Extract token from a backup on Android phones that do not allow non-encrypted backups
+* Use the steps from above but install Java and use [backup extractor](https://github.com/nelenkov/android-backup-extractor) to extract the encrypted backup.
+```
+$ java -jar abe-all.jar unpack mi-home-backup.ab unpack mi-home-backup.tar
+This backup is encrypted, please provide the password
+Password:
+
+# extract without header trick
+$ tar -zxf mi-home-backup.tar
+
+# db file is accessible
+$ ls apps/com.xiaomi.smarthome/db/
+geofencing.db				google_app_measurement.db		miio.db					miio2.db				mistat.db
+geofencing.db-journal			google_app_measurement.db-journal	miio.db-journal				miio2.db-journal			mistat.db-journal
+```
 
 ### iOS users
 ### Non-Jailbroken iOS users
@@ -82,7 +102,7 @@ This method will only work when you install the Mi Home app version v5.4.54. You
     * __Selectbox Plaintext / Hex:__ Hex
 * Hit the decrypt button. Your token are the first two lines of the right block of code. These two lines should contain a token of 32 characters and should be the correct token for your device.
 
-## Method 2 - Obtain Xiaomi Gateway device token
+## Method 3 - Obtain Xiaomi Gateway device token
 This method is specifically for the Xiaomi Gateway.
 
 * Open Mi Home App in your Android device.
@@ -94,10 +114,10 @@ This method is specifically for the Xiaomi Gateway.
 * Tap on the second option: "Hub info".
 * There you can find the device token.
 
-## Method 3 - Nodejs Command Line Tool from the miIO Device library
+## Method 4 - Nodejs Command Line Tool from the miIO Device library
 The author of the miIO Device Library which is used by this Homey app has also created a nodejs command line tool for retrieving device tokens. Please follow the steps in [these instructions](https://github.com/aholstenson/miio/blob/master/docs/management.md) to retrieve the token for the supported miio devices. Be aware that some devices hide their token after the device has been setup in the Mi Home app. Retrieving tokens for these devices will not work with this method but require method 3.
 
-## Method 4a - Packet Sender Tool
+## Method 5a - Packet Sender Tool
 During setup of Mi Home devices the device tokens an be retrieved by sending a ping command to the device. This method uses a tool called Packet Sender which you will need to download. Choose the portable version which does not require installation.
 * Download the portable version of [Packet Sender](https://packetsender.com/download).
 * Reset the device following the instructions from the device manual, this usually means holding one or two buttons for 10 seconds. This will reset all device settings including the Wi-Fi settings.
@@ -110,7 +130,7 @@ During setup of Mi Home devices the device tokens an be retrieved by sending a p
 * Click send and the device will respond with an answer which contains the unique device token. In the last 16 bytes (32 characters) of the devices response is the device token. Copy and save it somewhere.
 * Disconnect your computer from the devices network, you can now use the Mi Home app to setup the device and connect it to your Wi-Fi network.
 
-## Method 4b - netcat and Wireshark / tcpdump
+## Method 5b - netcat and Wireshark / tcpdump
 Like above you can also use this shell command to send the magic package:
 
 ```sh
@@ -119,3 +139,38 @@ echo -ne '\x21\x31\x00\x20\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x
 
 While running this you have to listen with Wireshark or tcpdump for UDP packages sent as anser by the robot.
 Extract the last 16 bytes of the answer and convert them to a (32 characters) hexadecimal string using `xxd -p`.
+
+## Method 6 - telnet with root access
+> discovered by [#slavikme](https://github.com/slavikme)
+
+In some devices, like "Mi Home Security Camera 360" (and maybe others), you are able to access the filesystem of the device using telnet.
+* Reset the device following the instructions from the device manual, this usually means holding one or two buttons for 10 seconds. This will reset all device settings including the Wi-Fi settings. Or you can just delete the device from Mi Home app, that will reset the device for you.
+* After reset the device will create it's own Wi-Fi network. This network will have a name related to the device and is used for configuring the device but will also allow us to retrieve the token. Connect to this Wi-Fi network with your computer which has a `telnet` command installed.
+* Find out Wi-Fi's gateway address ([This article](https://www.lifewire.com/how-to-find-your-default-gateway-ip-address-2626072) can help). Let's say that it is `192.168.14.1`.
+* Create a telnet connection to this addres:
+  ```bash
+  telnet 192.168.14.1
+  ```
+* It will ask you to enter a login. Just write `root`:
+  ```bash
+  Trying 192.168.14.1...
+  Connected to 192.168.14.1.
+  Escape character is '^]'.
+  mijia-camera login: root
+  #
+  ```
+* Now you have a root shell access to device's filesystem.
+* Get the hex token using the following command:
+  ```bash
+  /usr/sbin/nvram get miio_token | hd -n16 -e '16/1 "%02x " "\n"' | sed '2!d; s/ //g'
+  ```
+  The output should be something like this:
+  ```
+  3268786f5730305661445a6375467039
+  ```
+* If you are not getting 32 characters hexadecimal string, then just run the command `/usr/sbin/nvram get miio_token` and convert it using `xxd -p` or [this tool](https://www.rapidtables.com/convert/number/ascii-to-hex.html) (don't forget to remove the space delimiter) to hexadecimal representation.  
+  Command output example:
+  ```bash
+  # /usr/sbin/nvram get miio_token
+  2hxoW00VaDZcuFp9
+  ```
