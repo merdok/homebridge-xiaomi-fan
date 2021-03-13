@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.4.8] - 2020-03-13
+### Fixed
+- Fixed homebridge warning after recent update
+
+
 ## [1.4.7] - 2020-12-28
 ### Added
 - Added support for the zhimi.fan.fa1 (Mijia DC Circulating Fan)
