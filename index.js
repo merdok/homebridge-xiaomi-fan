@@ -83,6 +83,7 @@ class xiaomiFanDevice {
       this.ioniserControl = false;
     }
     this.angleButtons = config['angleButtons'];
+    this.verticalAngleButtons = config['verticalAngleButtons'];
 
 
     this.logInfo(`Init - got fan configuration, initializing device with name: ${this.name}`);
@@ -180,6 +181,7 @@ class xiaomiFanDevice {
     this.prepareNaturalModeControlService();
     this.prepareShutdownTimerService();
     this.prepareAngleButtonsService();
+    this.prepareVerticalAngleButtonsService();
     this.prepareFanLevelControlService();
     this.prepareSleepModeControlService();
     this.prepareIoniserControlService();
@@ -229,6 +231,10 @@ class xiaomiFanDevice {
       .addCharacteristic(Characteristic.SwingMode)
       .on('get', this.getSwingMode.bind(this))
       .on('set', this.setSwingMode.bind(this));
+    this.fanService
+      .addCharacteristic(Characteristic.TargetFanState)
+      .on('get', this.getVerticalSwingMode.bind(this))
+      .on('set', this.setVerticalSwingMode.bind(this));
     this.fanService
       .addCharacteristic(Characteristic.RotationDirection) // used to switch between buzzer levels on supported devices
       .on('get', this.getRotationDirection.bind(this))
@@ -410,6 +416,53 @@ class xiaomiFanDevice {
     });
   }
 
+  prepareVerticalAngleButtonsService() {
+    if (this.fanDevice.supportsVerticalOscillationAngle() === false && this.fanDevice.supportsOscillationVerticalLevels() === false) {
+      return;
+    }
+
+    if (this.verticalAngleButtons === false) {
+      return;
+    }
+
+    if (this.verticalAngleButtons === undefined || this.verticalAngleButtons === null) {
+      if (this.fanDevice.supportsOscillationVerticalLevels()) {
+        // if the fan supports vertical oscillation levels, and user did not specify the property then show all oscillation levels
+        this.verticalAngleButtons = this.fanDevice.oscillationVerticalLevels();
+      } else {
+        return;
+      }
+    }
+
+    if (Array.isArray(this.verticalAngleButtons) === false) {
+      this.logWarn('The vertical angle buttons service needs to be defined as an array! Please correct your config.json if you want to use the service.');
+      return;
+    }
+
+    this.verticalAngleButtonsService = new Array();
+    this.verticalAngleButtons.forEach((value, i) => {
+      let parsedValue = parseInt(value);
+
+      if (this.checkVerticalAngleButtonValue(parsedValue) === false) {
+        return;
+      }
+
+      this.verticalAngleButtons[i] = parsedValue;
+      let tmpAngleButton = new Service.Switch(this.name + ' Vertical Angle - ' + parsedValue, 'verticalAngleButtonService' + i);
+      tmpAngleButton
+        .getCharacteristic(Characteristic.On)
+        .on('get', (callback) => {
+          this.getVerticalAngleButtonState(callback, parsedValue);
+        })
+        .on('set', (state, callback) => {
+          this.setVerticalAngleButtonState(state, callback, parsedValue);
+        });
+
+      this.fanAccesory.addService(tmpAngleButton);
+      this.verticalAngleButtonsService.push(tmpAngleButton);
+    });
+  }
+
   prepareFanLevelControlService() {
     if (this.fanLevelControl && this.fanDevice.supportsFanLevel()) {
       this.fanLevelControlService = new Array();
@@ -578,6 +631,25 @@ class xiaomiFanDevice {
     }
   }
 
+  getVerticalSwingMode(callback) {
+    let isVerticalSwingModeActive = false;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      isVerticalSwingModeActive = this.fanDevice.isVerticalSwingModeEnabled();
+    }
+    callback(null, isVerticalSwingModeActive ? Characteristic.TargetFanState.AUTO : Characteristic.TargetFanState.MANUAL);
+  }
+
+  setVerticalSwingMode(state, callback) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      let isVerticalSwingModeActive = state === Characteristic.TargetFanState.AUTO;
+      this.fanDevice.setVerticalSwingModeEnabled(isVerticalSwingModeActive);
+      this.updateVerticalAngleButtonsAndSwingMode(null, isVerticalSwingModeActive); // update the vertical angel buttons if enabled
+      callback();
+    } else {
+      callback(this.createError(`cannot set vertical swing mode state`));
+    }
+  }
+
   getRotationDirection(callback) {
     let buzzerLevel = 2;
     if (this.fanDevice && this.fanDevice.isFanConnected() && this.fanDevice.supportsBuzzerLevelControl()) {
@@ -611,7 +683,7 @@ class xiaomiFanDevice {
       } else if (direction === 'up') {
         this.fanDevice.moveUp();
       } else if (direction === 'down') {
-        this.fanDevice.modeDown();
+        this.fanDevice.moveDown();
       }
       setTimeout(() => {
         if (this.moveLeftService) this.moveLeftService.getCharacteristic(Characteristic.On).updateValue(false);
@@ -776,6 +848,34 @@ class xiaomiFanDevice {
     }
   }
 
+  getVerticalAngleButtonState(callback, angle) {
+    let verticalAngleButtonEnabled = false;
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      if (this.fanDevice.isPowerOn() && this.fanDevice.isVerticalSwingModeEnabled()) {
+        verticalAngleButtonEnabled = this.fanDevice.getVerticalAngle() === angle;
+      }
+    }
+    callback(null, verticalAngleButtonEnabled);
+  }
+
+  setVerticalAngleButtonState(state, callback, angle) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
+      if (state) {
+        // if swing mode disabled then turn it on
+        if (this.fanDevice.isVerticalSwingModeEnabled() === false) {
+          this.fanDevice.setVerticalSwingModeEnabled(true);
+        }
+        this.fanDevice.setVerticalAngle(angle);
+      } else {
+        this.fanDevice.setVerticalSwingModeEnabled(false);
+      }
+      this.updateVerticalAngleButtonsAndSwingMode(angle, state);
+      callback();
+    } else {
+      callback(this.createError(`cannot set vertical swing angle`));
+    }
+  }
+
   getFanLevelState(callback, level) {
     let levelButtonEnabled = false;
     if (this.fanDevice && this.fanDevice.isFanConnected() && this.fanDevice.isPowerOn()) {
@@ -874,6 +974,7 @@ class xiaomiFanDevice {
       if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.fanDevice.getBatteryLevel());
       if (this.batteryService) this.batteryService.getCharacteristic(Characteristic.StatusLowBattery).updateValue(this.fanDevice.getBatteryLevel() <= BATTERY_LOW_THRESHOLD ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
       this.updateAngleButtonsAndSwingMode(null, this.fanDevice.isSwingModeEnabled());
+      this.updateVerticalAngleButtonsAndSwingMode(null, this.fanDevice.isVerticalSwingModeEnabled());
       this.updateFanLevelButtons();
     }
   }
@@ -893,6 +994,29 @@ class xiaomiFanDevice {
 
       this.angleButtonsService.forEach((tmpAngleButton, i) => {
         if (activeAngle === this.angleButtons[i]) {
+          tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(true);
+        } else {
+          tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(false);
+        }
+      });
+    }
+  }
+
+  updateVerticalAngleButtonsAndSwingMode(activeAngle, enabled) {
+    if (this.fanService) this.fanService.getCharacteristic(Characteristic.TargetFanState).updateValue(enabled ? Characteristic.TargetFanState.AUTO : Characteristic.TargetFanState.MANUAL);
+    if (this.verticalAngleButtonsService) {
+      // if swing mode disabled or the fan is not turned on then just disable all the angle switches
+      if (enabled === false || this.fanDevice.isPowerOn() === false) {
+        activeAngle = "disabled"; // use fake value for angle
+      }
+
+      // if angle not specified then automatically update the status
+      if (activeAngle === undefined || activeAngle === null) {
+        activeAngle = this.fanDevice.getVerticalAngle();
+      }
+
+      this.verticalAngleButtonsService.forEach((tmpAngleButton, i) => {
+        if (activeAngle === this.verticalAngleButtons[i]) {
           tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(true);
         } else {
           tmpAngleButton.getCharacteristic(Characteristic.On).updateValue(false);
@@ -952,6 +1076,24 @@ class xiaomiFanDevice {
       // if the fan uses predefined osiscllation levels then check if the specified angle is on the list
       if (this.fanDevice.checkOscillationLevelSupported(angleValue) === false) {
         this.logWarn(`Specified angle ${angleValue} is not within the supported angle levels of your fan. Allowed values: ${JSON.stringify(this.fanDevice.oscillationLevels())}. Not adding angle button!`);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  checkVerticalAngleButtonValue(angleValue) {
+    if (this.fanDevice.supportsVerticalOscillationAngle()) {
+      // if specified angle not within range then show a a warning and stop processing this value
+      if (this.fanDevice.checkVerticalOscillationAngleWithinRange(angleValue) === false) {
+        this.logWarn(`Specified vertical angle ${angleValue} is not within the supported vertical range ${JSON.stringify(this.fanDevice.oscillationVerticalAngleRange())}. Not adding angle button!`);
+        return false;
+      }
+    } else if (this.fanDevice.supportsOscillationVerticalLevels()) {
+      // if the fan uses predefined vertical oscillation levels then check if the specified angle is on the list
+      if (this.fanDevice.checkVerticalOscillationLevelSupported(angleValue) === false) {
+        this.logWarn(`Specified vertical angle ${angleValue} is not within the supported vertical angle levels of your fan. Allowed values: ${JSON.stringify(this.fanDevice.verticalOscillationLevels())}. Not adding angle button!`);
         return false;
       }
     }

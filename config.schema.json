@@ -113,6 +113,14 @@
               "type": "integer"
             }
           },
+          "verticalAngleButtons": {
+            "title": "Vertical angle buttons",
+            "description": "Allows to create buttons that can switch between vertical oscillation angles. Only on supported devices!",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
           "ioniserControl": {
             "title": "Ioniser control service",
             "description": "Show a switch which allows to quickly enable/disable the ioniser on your fan. Only on supported devices!",
