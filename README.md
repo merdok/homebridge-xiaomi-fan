@@ -134,6 +134,11 @@ Whether the angle buttons service is enabled. This allows to create buttons whic
   - Set an array of numeric values. Possible values depend on the fan model
   - Some fans support predefined angle buttons, in the case if the property is not specified the angle buttons are retrieved from the fan and displayed as switches. If you want to prevent that behaviour set the property value as an empty array **[]** or **false**
   - Tapping the active oscillation angle button will disable oscillation completely
+- `verticalAngleButtons` [optional]
+Whether the vertical angle buttons service is enabled. This allows to create buttons which can switch between different vertical oscillation angles. Only on supported devices! **Default: "" (disabled)**
+  - Set an array of numeric values. Possible values depend on the fan model
+  - Some fans support predefined vertical angle buttons, in the case if the property is not specified the vertical angle buttons are retrieved from the fan and displayed as switches. If you want to prevent that behaviour set the property value as an empty array **[]** or **false**
+  - Tapping the active vertical oscillation angle button will disable vertical oscillation completely
 - `ioniserControl` [optional]
 Show a switch which allows to quickly enable/disable the ioniser on your fan. Only on supported devices! **Default: false**
 - `fanLevelControl` [optional]
