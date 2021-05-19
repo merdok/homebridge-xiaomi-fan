@@ -6,8 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2021-05-20
+### Added
+- Added support for the zhimi.fan.fb1 (Mi Smart Air Circulator Fan) fan
+- New `verticalAngleButtons` property
+- Added a reference to a tool in the readme for easy token retrieval
 
-## [1.4.8] - 2020-03-13
+### Changed
+- Improved the naming of services to make them more readable (no need to repeat the fan name on each service)
+
+
+## [1.4.8] - 2021-03-13
 ### Fixed
 - Fixed homebridge warning after recent update
 
