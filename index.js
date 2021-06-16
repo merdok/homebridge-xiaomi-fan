@@ -575,6 +575,7 @@ class xiaomiFanDevice {
     let fanRotationSpeed = 0;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       fanRotationSpeed = this.fanDevice.getRotationSpeed();
+      fanRotationSpeed = this.adjustToPercentageRange(fanRotationSpeed);
     }
     callback(null, fanRotationSpeed);
   }
@@ -714,6 +715,7 @@ class xiaomiFanDevice {
     let ledBrightness = 0;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       ledBrightness = this.fanDevice.getLedBrightness();
+      ledBrightness = this.adjustToPercentageRange(ledBrightness);
     }
     callback(null, ledBrightness);
   }
@@ -784,6 +786,7 @@ class xiaomiFanDevice {
     let shutdownTimerTime = 0;
     if (this.fanDevice && this.fanDevice.isFanConnected()) {
       shutdownTimerTime = this.fanDevice.getShutdownTimer();
+      shutdownTimerTime = this.adjustToPercentageRange(shutdownTimerTime);
     }
     callback(null, shutdownTimerTime);
   }
@@ -1075,6 +1078,15 @@ class xiaomiFanDevice {
     }
 
     return true;
+  }
+
+  adjustToPercentageRange(value) {
+    // make sure a percentage value is a number and withinh 0-100
+    let newValue = value;
+    if (!Number.isFinite(newValue)) newValue = 0;
+    if (newValue > 100) newValue = 100;
+    if (newValue < 0) newValue = 0;
+    return newValue;
   }
 
   /*----------========== LOG ==========----------*/
