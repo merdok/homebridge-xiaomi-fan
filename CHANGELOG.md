@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.5.3] - 2021-06-18
+### Fixed
+- Fix more characteristic warnings
+
+### Changed
+- The generated accessory uuid will now be more unique, this might cause existing accessories to reset
+
+
 ## [1.5.2] - 2021-06-17
 ### Fixed
 - Fix characteristic warnings
