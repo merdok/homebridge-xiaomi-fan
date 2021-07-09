@@ -644,7 +644,8 @@ class xiaomiFanDevice {
       }
       callback();
     } else {
-      callback(this.createError(`cannot set buzzer level`));
+      // throw no error on devices which does not support the buzzer control, simply do nothing
+    //  callback(this.createError(`cannot set buzzer level`));
     }
   }
 
