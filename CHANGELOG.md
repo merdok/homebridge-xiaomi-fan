@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.5.4] - 2021-07-11
+### Fixed
+- Fix an issue where the fan woudl report no response in some cases
+
+### Changed
+- Adjusted the dmaker.fan.p5 angle range to 0-140
+
+
 ## [1.5.3] - 2021-06-18
 ### Fixed
 - Fix more characteristic warnings
