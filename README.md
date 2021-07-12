@@ -39,6 +39,7 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * dmaker.fan.p10 (Mi Smart Standing Fan 2)
 * dmaker.fan.p11 (Mi Smart Standing Fan Pro)
 * dmaker.fan.p15 (Mi Smart Standing Fan Pro EU)
+* dmaker.fan.p18 (Mi Smart Fan 2)
 
 ## Installation
 
