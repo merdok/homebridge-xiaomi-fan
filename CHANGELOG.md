@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.5.6] - 2021-07-27
+### Fixed
+- Fix characteristic warnings
+
+
 ## [1.5.5] - 2021-07-13
 ### Added
 - Added support for the dmaker.fan.p18 (Mi Smart Fan 2) fan
