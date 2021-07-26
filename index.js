@@ -936,7 +936,7 @@ class xiaomiFanDevice {
   /*----------========== HELPERS ==========----------*/
 
   updateFanStatus() {
-    if (this.fanDevice) {
+    if (this.fanDevice && this.fanDevice.isFanConnected()) {
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.Active).updateValue(this.fanDevice.isPowerOn() ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE);
       if (this.fanService && this.fanDevice.supportsFanSpeed()) this.fanService.getCharacteristic(Characteristic.RotationSpeed).updateValue(this.adjustToPercentageRange(this.fanDevice.getRotationSpeed()));
       if (this.fanService) this.fanService.getCharacteristic(Characteristic.LockPhysicalControls).updateValue(this.fanDevice.isChildLockActive() ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED);
