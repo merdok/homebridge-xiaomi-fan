@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.5.7] - 2021-08-03
+### Added
+- Added support for the air.fan.ca23ad9 (AIRMATE CA23-AD9 Air Circulation Fan) fan
+
+
 ## [1.5.6] - 2021-07-27
 ### Fixed
 - Fix characteristic warnings
