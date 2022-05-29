@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.8] - 2022-05-30
+### Added
+- Added support for dmaker.fan.p30 (Xiaomi Smart Standing Fan 2) fan
+- Added support for dmaker.fan.p33 (Xiaomi Smart Standing Fan 2 Pro) fan
+- Added some extra logging output
+
 
 ## [1.5.7] - 2021-08-03
 ### Added
