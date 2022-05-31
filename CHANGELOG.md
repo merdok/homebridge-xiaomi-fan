@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.9] - 2022-06-01
+### Added
+- Added support for dmaker.fan.p220 (Mijia DC Inverter Circulating Floor Fan) fan
+- Added missing devices to README
+
+### Fixed
+- Fix dmaker.fan.p30 support
+
+
 ## [1.5.8] - 2022-05-30
 ### Added
 - Added support for dmaker.fan.p30 (Xiaomi Smart Standing Fan 2) fan
