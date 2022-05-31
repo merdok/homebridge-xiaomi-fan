@@ -41,6 +41,9 @@ The goal is to make the fan fully controllable from the native Homekit iOS app a
 * dmaker.fan.p15 (Mi Smart Standing Fan Pro EU)
 * dmaker.fan.p18 (Mi Smart Fan 2)
 * air.fan.ca23ad9 (AIRMATE CA23-AD9 Air Circulation Fan)
+* dmaker.fan.p30 (Xiaomi Smart Standing Fan 2)
+* dmaker.fan.p33 (Xiaomi Smart Standing Fan 2 Pro)
+* dmaker.fan.p220 (Mijia DC Inverter Circulating Floor Fan)
 
 ## Installation
 
